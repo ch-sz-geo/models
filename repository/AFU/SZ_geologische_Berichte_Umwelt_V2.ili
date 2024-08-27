@@ -1,0 +1,121 @@
+INTERLIS 2.3;
+!!==============================================================================
+!!@ Title               = "Datenmodell für geologische Berichte des Zuständigkeitsgebietes des AFU (Amt für Umwelt und Energie)";
+!!@ shortDescription    = "Die geologischen Bereicht führen Informationen zu verschiedene Untersuchungen, wie z.B. Bohrungen";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A144";
+!!@ iliCompilerVersion  = "ili2c-5.5.3-6c54f443006d3ca72d3e5a2392e7d5a2f75b6e8b";
+!!------------------------------------------------------------------------------
+!! Todo: vgl. die versch. "todo" im Datenmodell
+!!------------------------------------------------------------------------------
+!! Info:
+!!   - Grundlage für dieses Datenmodell: I:\AGI\Geoinformation\Produkte\GDI\Themen\A144 Bohrdaten\a\model\2023-08-03_SZ_Bohrdaten_V2 Vorschalg AfU.ili
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2023-03-01 | 2.0 | Kep | Anpassungen:
+!!                            - Gesamtüberarbeitung auf Antrag AfU
+!!                            - Umbenennung in "SZ_geologische_Berichte_Umwelt_V2"
+!! 2020-06-29 | 1.0 | TH  | Erstfassung
+!!==============================================================================
+MODEL SZ_geologische_Berichte_Umwelt_V2 (de)
+  AT "http://models.geo.sz.ch"
+  VERSION "2023-03-01" =
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1;
+
+    Linie = POLYLINE WITH (STRAIGHTS) VERTEX Punkt;
+
+    Polygon = SURFACE WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.001;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) = 
+      OID AS UUIDOID;
+      Code       :  MANDATORY  TEXT*255;
+      Name       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Inhalt EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name; 
+    END Inhalt;
+
+    CLASS Untersuchungszweck EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Untersuchungszweck;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+   DEPENDS ON SZ_geologische_Berichte_Umwelt_V2.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Dokument =
+      OID AS UUIDOID;
+      erfasstVon        :  MANDATORY  TEXT*100;
+      erfasstAm         :  MANDATORY  XMLDateTime;
+      geaendertVon      :  MANDATORY  TEXT*100;
+      geaendertAm       :  MANDATORY  XMLDateTime;
+      Kennung           :  MANDATORY  TEXT*30;
+      KennungAlt        :             TEXT*30;
+      Titel             :  MANDATORY  TEXT*100;
+      Erstelldatum      :  MANDATORY  XMLDate;
+      Dokumentlink      :             TEXT*200;
+      Baugesuchsnummer  :             TEXT*20;
+      Autor             :             TEXT*36;
+      Bemerkung         :             MTEXT*1000;
+      UNIQUE Kennung;
+    END Dokument;
+    
+    CLASS Geometrie (ABSTRACT) =
+      OID AS UUIDOID;
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bezeichnung   :             TEXT*30;
+    END Geometrie;
+
+    CLASS Gebiet EXTENDS Geometrie =
+      Geometrie  :  MANDATORY  Polygon;
+    END Gebiet;
+
+    CLASS Pfad EXTENDS Geometrie =
+      Geometrie  :  MANDATORY  Linie;
+    END Pfad;
+
+    CLASS Ort EXTENDS Geometrie =
+      Bohrprofil :             TEXT*36;
+      Geometrie  :  MANDATORY  Punkt;
+    END Ort;
+
+    ASSOCIATION Geometrie__Dokument =
+      rGeometrie  --  {1..*}  Geometrie;
+      rDokument   --  {0..*}  Dokument;
+    END Geometrie__Dokument;
+
+    ASSOCIATION Inhalt__Dokument =
+      rInhalt (EXTERNAL)  --  {1..*}  SZ_geologische_Berichte_Umwelt_V2.Stammdaten.Inhalt;
+      rDokument           --  {0..*}  Dokument;
+    END Inhalt__Dokument;
+
+    ASSOCIATION Untersuchungszweck__Dokument =
+      rUntersuchungszweck (EXTERNAL)  --  {0..1}  SZ_geologische_Berichte_Umwelt_V2.Stammdaten.Untersuchungszweck;
+      rDokument                       --  {0..*}  Dokument;
+    END Untersuchungszweck__Dokument; 
+
+  END Fachdaten;
+
+END SZ_geologische_Berichte_Umwelt_V2.
