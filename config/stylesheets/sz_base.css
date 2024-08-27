@@ -1,0 +1,99 @@
+
+@import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";
+@import "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
+
+body {
+	font-family: 'trade gothic', sans-serif;
+	line-height: 1.5;
+	padding: 0;
+	/*margin: 0px 300px 0px 300px*/
+}
+
+#header-table {
+	width: 100%;
+	border-left: white;
+	border-right: white;
+}
+
+#header-departement{
+	margin-left: 400px;
+	color: black;
+}
+
+#header-amt {
+	vertical-align: top;
+	width: 35%;
+	min-width: max-content; 
+}
+
+#header-amt > h3{
+	margin: 0px 0px 0px 400px;
+	padding: 0px;
+ }
+ 
+ #header-address {
+	padding-bottom: 20px; 
+ }
+ 
+ #header-logo {
+	width: max-content;
+	text-align: right;
+	padding-right: 400px;
+ }
+ 
+ #second-row{
+	 margin-bottom: 40px;
+ }
+
+#link-list-body{
+	margin: 0px 400px 0px 400px;
+}
+
+ul.sectlevel2, ul.sectlevel3, ul.sectlevel1 {
+	margin-left: 0px; 
+	list-style: none;
+	padding-left: 0px !important;
+}
+
+ul.sectlevel0 > li > a {
+	visibility: hidden;
+	height: 0px;
+}
+
+li a {
+	font-family: 'trade gothic', sans-serif;
+	font-size: 14pt;
+	color: black;
+	cursor: pointer;
+	margin: 0px;
+	text-indent: initial;
+}
+
+h1, h1 a.link {
+	font-family: 'trade gothic', sans-serif;
+	font-weight: bold;
+	font-size: 36pt;
+	line-height: 41pt;
+	color: #000000 !important;
+}
+
+h2, h2 a.link {
+	font-family: 'trade gothic', sans-serif;
+	font-weight: bold;
+	color: #000000;
+	font-size: 24pt;
+}
+
+h3, h3 a.link {
+	font-family: 'trade gothic', sans-serif;
+	font-weight: bold;
+	color: #000000;
+	font-size: 18pt;
+}
+
+h4, h4 a.link{
+	font-family: 'trade gothic', sans-serif;
+	font-weight: bold;
+	color: #000000;
+	font-size: 15pt;
+}
