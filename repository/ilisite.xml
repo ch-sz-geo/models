@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TRANSFER xmlns="http://www.interlis.ch/INTERLIS2.3">
+  <HEADERSECTION SENDER="ch-geo-sz-2024-08-27" VERSION="2.3">
+    <MODELS>
+      <MODEL NAME="IliSite09" VERSION="2009-11-12" URI="mailto:ce@eisenhutinformatik.ch" />
+    </MODELS>
+  </HEADERSECTION>
+  <DATASECTION>
+    <IliSite09.SiteMetadata BID="ch.sz.models.github">
+      <IliSite09.SiteMetadata.Site TID="1">
+        <Name>https://ch-sz-geo.github.io/models</Name>
+        <Title>Modell-Ablage des Kantons Schwyz auf GitHub</Title>
+        <shortDescription>In dieser Ablage sind Modelle des Kantons Schwyz, welche unter der Versionsverwaltung von GitHub stehen. Die Modellablage ist ein unter dem Haupt-Repository models.geo.sz.ch tieferes Repository.</shortDescription>
+        <Owner>http://models.geo.sz.ch</Owner>
+        <technicalContact>mailto:geoportal@sz.ch</technicalContact>
+        <parentSite>
+          <IliSite09.RepositoryLocation_>
+            <value>https://models.geo.sz.ch</value>
+          </IliSite09.RepositoryLocation_>
+        </parentSite>
+      </IliSite09.SiteMetadata.Site>
+    </IliSite09.SiteMetadata>
+  </DATASECTION>
+</TRANSFER>
