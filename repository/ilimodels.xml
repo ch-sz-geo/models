@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TRANSFER xmlns="http://www.interlis.ch/INTERLIS2.3">
+  <HEADERSECTION SENDER="AGI-SZ" VERSION="2.3">
+    <MODELS>
+      <MODEL NAME="IliRepository20" VERSION="2020-04-17" URI="http://models.interlis.ch/core"></MODEL>
+    </MODELS>
+  </HEADERSECTION>
+  <DATASECTION>
+    <!--==================================================-->
+    <!--**************************************************-->
+    <!--INTERLIS-Modelle des Repositorys auf GitHub-->
+    <!--**************************************************-->
+    <!--==================================================-->
+    <IliRepository20.RepositoryIndex BID="ch.sz.geo.models.github.ili2_3">
+      <IliRepository20.RepositoryIndex.ModelMetadata TID="1">
+        <Name>dummy</Name>
+        <SchemaLanguage>ili2_3</SchemaLanguage>
+        <!--Web-Seite von "models" auf GitHub: https://ch-sz-geo.github.io/models/-->
+        <!--URL einer konkreten ili-Datei: https://github.com/ch-sz-geo/models/blob/main/repository/AFU/SZ_geologische_Berichte_Umwelt_V2.ili-->
+        <File>https://github.com/ch-sz-geo/models/blob/main/repository/AFU/SZ_geologische_Berichte_Umwelt_V2.ili</File>
+        <Version>2009-11-19</Version>
+        <shortDescription>todo</shortDescription>
+        <Issuer>https://ch-sz-geo.github.io/models/</Issuer>
+        <technicalContact>mailto:geoportal@sz.ch</technicalContact>
+        <furtherInformation>https://www.sz.ch</furtherInformation>
+        <md5>b2bd836d761de6a1324e3a6c3f7d3650</md5>
+      </IliRepository20.RepositoryIndex.ModelMetadata>
+    </IliRepository20.RepositoryIndex>
+  </DATASECTION>
+</TRANSFER>
