@@ -1,0 +1,105 @@
+name: IliManagement
+
+on:
+  workflow_run:
+    workflows: ["update Model Repository"]   # must match the 'name:' field exactly
+    types:
+      - completed
+  push:
+    branches: [main]
+    paths: 
+      - 'repository/**'
+  workflow_dispatch:
+
+jobs:
+  manage-Ili:
+    runs-on: ubuntu-latest
+
+    permissions: 
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        
+      - name: ilimanagerInstalation
+        uses: ch-sz-geo/interlis-setup-action/setup-ilimanager@v1
+        with:
+          path: ../ilimanager
+
+      - name: getComitHistory
+        run: |
+          set -euo pipefail
+
+          GIT_URL="https://raw.githubusercontent.com/${{ github.repository }}"
+          REF=$(git rev-parse --abbrev-ref HEAD)
+          echo "Scanning branch: $REF"
+          
+          GIT_LOG_ARGS="--format=%H|||%as|||%an|||%s"
+          GIT_LOG_ARGS="$GIT_LOG_ARGS -- repository"
+          
+          while IFS='|||' read -r sha date author subject; do
+            [ -z "$sha" ] && continue
+          
+            # Get parent (empty string for initial commit)
+            PARENT=$(git rev-parse --verify "${sha}^" 2>/dev/null || echo "")
+          
+            if [ -z "$PARENT" ]; then
+            FILES=$(git diff-tree --no-commit-id -r --name-status "$sha" 2>/dev/null || true)
+            else
+            FILES=$(git diff --name-status "$PARENT" "$sha" 2>/dev/null || true)
+            fi
+            
+            [ -z "$FILES" ] && continue  # skip empty merges
+            
+            echo "## \`${sha:0:8}\` — $date"
+            echo "**Author:** $author  "
+            echo "**Message:** $subject  "
+            echo "**Full SHA:** \`$sha\`"
+            while IFS=$'\t' read -r status filepath; do
+              [ -z "$status" ] && continue
+              case "$status" in
+              A*) label="Added" ;;
+              M*) label="Modified" ;;
+              D*) label="Deleted" ; continue;;
+              R*) label="Renamed" ; continue;;
+              C*) label="Copied" ;;
+              T*) label="Type changed" ;;
+              *)  label="$status" ;;
+              esac
+              echo "| $label | \`$filepath\` |"
+              mkdir -p "./$sha/$(dirname "$filepath")"
+              echo "$GIT_URL/$sha/$filepath"
+              curl "$GIT_URL/$sha/$filepath" -o "./$sha/$filepath"
+              
+            done <<< "$FILES"
+            
+          done < <(git log $GIT_LOG_ARGS)
+          echo "done"
+          
+      - name: run iliManager
+        run: |
+          java -jar ../ilimanager/ilimanager.jar --updateIliModels --out ilimodels.xml --repos ./
+        
+      - name: Set up JDK 25
+        uses: actions/setup-java@v3
+        with:
+          java-version: '25'
+          distribution: 'adopt'
+          
+      - name: verify java Version
+        run: java --version
+      
+      - name: run ilimodelsEditor
+        run: |
+          java -jar utils/XMLCommandLineEditor.jar -i ilimodels.xml -p --update-KeyValue File:../ -r "^[0-9a-f]+/repository/[^\s]+\.ili$"
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git status
+          git add ilimodels.xml
+          git commit -am "Created or Updated and Added ilimodels.xml"
+          git push origin main

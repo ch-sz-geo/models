@@ -1,0 +1,34 @@
+name: IliRepoValidation
+
+on: 
+  workflow_run:
+    workflows: ["IliManagement"]   # must match the 'name:' field exactly
+    types:
+      - completed
+  push:
+    paths: 
+      - 'ilimodels.xml'
+  
+  workflow_dispatch:
+
+jobs:
+  validate-IliRepo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 25
+        uses: actions/setup-java@v3
+        with:
+          java-version: '25'
+          distribution: 'adopt'
+      - name: ili2cInstalation
+        uses: ch-sz-geo/interlis-setup-action/setup-iliCompiler@v1
+        with:
+          path: ../ili2c
+      - name: verify java Version
+        run: java --version
+      - name: run iliManager
+        run: |
+          java -jar ../ili2c/ili2c.jar --check-repo-ilis https://raw.githubusercontent.com/ch-sz-geo/Test_models/main
