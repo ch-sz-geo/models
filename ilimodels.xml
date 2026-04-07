@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?><TRANSFER xmlns="http://www.interlis.ch/INTERLIS2.3">
+<HEADERSECTION SENDER="ilimanager-0.9.1-5015e873394cc094281fe8d69f7d4e9a329c88b3" VERSION="2.3"><MODELS><MODEL VERSION="2020-04-17" URI="http://models.interlis.ch/core" NAME="IliRepository20"></MODEL></MODELS></HEADERSECTION>
+<DATASECTION>
+<IliRepository20.RepositoryIndex BID="b1">
+</IliRepository20.RepositoryIndex>
+</DATASECTION>
+</TRANSFER>
