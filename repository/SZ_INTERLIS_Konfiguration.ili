@@ -1,0 +1,43 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "INTERLIS-Konfiguration";
+!!@ shortDescription    = "Über dieses Thema werden alle INTERLIS-spezifischen Informationen geführt. Eine dieser Information ist der Präfix für die STANDARDOID.";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A256";
+!!@ iliCompilerVersion  = "ili2c-5.6.7-d72067b5afa50db9409d1c10d99110fbc8bcca20";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2026-02-11 | 1.0 | kep | Erstfassung
+!!==============================================================================
+MODEL SZ_INTERLIS_Konfiguration_V1 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-02-11" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS StandardOID_Praefix =
+      OID_Praefix   :  MANDATORY  TEXT*8;
+	  Bestelldatum  :  MANDATORY  XMLDate;
+      Organisation  :  MANDATORY  TEXT*255;
+	  Thema         :  MANDATORY  TEXT*255;
+	  Vorname       :  MANDATORY  TEXT*50;   !! Vorname der Person, welche die OID beantragt hat
+	  Nachname      :  MANDATORY  TEXT*50;   !! Nachname der Person, welche die OID beantragt hat
+	  E_Mail        :  MANDATORY  URI;       !! E-Mail der Person, welche die OID beantragt hat
+	  Bemerkung     :             MTEXT*1000;
+	  UNIQUE OID_Praefix;
+    END StandardOID_Praefix;
+
+  END Stammdaten;
+
+END SZ_INTERLIS_Konfiguration_V1.
