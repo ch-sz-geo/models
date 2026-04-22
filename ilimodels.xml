@@ -2,6 +2,8 @@
 <HEADERSECTION SENDER="ilimanager-0.9.1-5015e873394cc094281fe8d69f7d4e9a329c88b3" VERSION="2.3"><MODELS><MODEL VERSION="2020-04-17" URI="http://models.interlis.ch/core" NAME="IliRepository20"></MODEL></MODELS></HEADERSECTION>
 <DATASECTION>
 <IliRepository20.RepositoryIndex BID="b1">
+<IliRepository20.RepositoryIndex.ModelMetadata TID="10"><Name>SZ_INTERLIS_Konfiguration_V1</Name><SchemaLanguage>ili2_4</SchemaLanguage><File>../b4ef7192758ca6d689fd88c43719b381444ad967/repository/SZ_INTERLIS_Konfiguration.ili</File><Version>2026-02-11</Version><NameLanguage>de</NameLanguage><publishingDate>2026-04-22</publishingDate><Issuer>https://models.geo.sz.ch</Issuer><technicalContact>mailto:geoportal@sz.ch</technicalContact><furtherInformation>https://www.sz.ch</furtherInformation><browseOnly>false</browseOnly><md5>97fc4b2b0e1fffcf189d5ee3131558f7</md5></IliRepository20.RepositoryIndex.ModelMetadata>
+<IliRepository20.RepositoryIndex.ModelMetadata TID="11"><Name>SZ_INTERLIS_Konfiguration_V1</Name><SchemaLanguage>ili2_4</SchemaLanguage><File>repository/SZ_INTERLIS_Konfiguration.ili</File><Version>2026-02-11</Version><NameLanguage>de</NameLanguage><publishingDate>2026-04-22</publishingDate><Issuer>https://models.geo.sz.ch</Issuer><technicalContact>mailto:geoportal@sz.ch</technicalContact><furtherInformation>https://www.sz.ch</furtherInformation><browseOnly>false</browseOnly><md5>97fc4b2b0e1fffcf189d5ee3131558f7</md5></IliRepository20.RepositoryIndex.ModelMetadata>
 </IliRepository20.RepositoryIndex>
 </DATASECTION>
 </TRANSFER>
