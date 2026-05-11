@@ -1,0 +1,48 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Schutzwald (Bearbeitungsmodell)";
+!!@ shortDescription    = "Modell zur Datenbearbeitung des Themas 'Waldfunktion im Bereich Schutzwald'. Das Modell basiert auf dem Bundesmodell zum Geobasisdatensatz ID 161.2 und ergänzt dieses mit den kantonalen Mehranforderungen";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A064";
+!!@ Compiler-Version    = "ili2c-5.6.8-e6f7ab6dd5cdba29afc9b24866ecb98c057d82b2";
+!!------------------------------------------------------------------------------
+!! Todo: - - -
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2025-01-23 | 1.0 | Kep | Erstfassung
+!!==============================================================================
+MODEL SZ_Schutzwald (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2025-01-23" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1;
+    Einzelflaeche =
+      SURFACE WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.001;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Schutzwald =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  Einzelflaeche;
+    END Schutzwald;
+
+  END Fachdaten;
+
+END SZ_Schutzwald.
