@@ -1,0 +1,268 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Grundwasservorkommen";
+!!@ shortDescription    = "Dieses Modell erweitert das gleichnamige Bundesmodell mit kantonalen Mehranforderungen";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A027";
+!!@ Compiler-Version    = "ili2c-5.6.7-d72067b5afa50db9409d1c10d99110fbc8bcca20";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2026-04-16 | 1.1 | MG  | Ergänzung der Assoziation Grundwasserstrom - Grundwasserstand
+!! 2025-12-09 | 1.0 | Kep | Erstfassung
+!!==============================================================================
+MODEL SZ_Grundwasservorkommen_V1_1 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-04-16"  =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1
+    ;
+    Einzelflaeche = SURFACE WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS>0.001;
+    gerichteteLinie = DIRECTED POLYLINE WITH (STRAIGHTS) VERTEX Punkt;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      Name       :  MANDATORY  TEXT*255;
+      Code       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Gewissheitsgrad EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Gewissheitsgrad;
+
+    CLASS Ueberlagerung EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Ueberlagerung;
+
+    CLASS Druckverhaeltnis EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Druckverhaeltnis;
+
+    CLASS Maechtigkeit_Lockergestein EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Maechtigkeit_Lockergestein;
+
+    CLASS Lage EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Lage;
+
+    CLASS Typ EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Typ;
+
+    CLASS Erfassung EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Erfassung;
+
+    CLASS Maechtigkeit_Festgestein EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Maechtigkeit_Festgestein;
+
+    CLASS Ergiebigkeit EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Ergiebigkeit;
+
+    CLASS Grundwasserstand EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Grundwasserstand;
+
+    CLASS Druckniveau EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Druckniveau;
+
+    CLASS Flaechentyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Flaechentyp;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Grundwasservorkommen_V1_1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Grundwasserleiter_Lockergestein =
+      erfasstVon            :  MANDATORY  TEXT*100;
+      erfasstAm             :  MANDATORY  XMLDateTime;
+      geaendertVon          :  MANDATORY  TEXT*100;
+      geaendertAm           :  MANDATORY  XMLDateTime;
+      Bezeichnung           :             TEXT*100;
+      istTieferesStockwerk  :  MANDATORY  BOOLEAN;
+      Bemerkung             :             MTEXT*1000;
+      Geometrie             :  MANDATORY  SZ_Grundwasservorkommen_V1_1.Einzelflaeche;
+    END Grundwasserleiter_Lockergestein;
+
+    CLASS Grundwasserleiter_Festgestein =
+      erfasstVon            :  MANDATORY  TEXT*100;
+      erfasstAm             :  MANDATORY  XMLDateTime;
+      geaendertVon          :  MANDATORY  TEXT*100;
+      geaendertAm           :  MANDATORY  XMLDateTime;
+      Bezeichnung           :             TEXT*100;
+      istTieferesStockwerk  :  MANDATORY  BOOLEAN;
+      Bemerkung             :             MTEXT*1000;
+      Geometrie             :  MANDATORY  SZ_Grundwasservorkommen_V1_1.Einzelflaeche;
+    END Grundwasserleiter_Festgestein;
+
+    CLASS Isohypse =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Kote          :  MANDATORY -200.0 .. 3000.0;
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  SZ_Grundwasservorkommen_V1_1.gerichteteLinie;
+    END Isohypse;
+
+    CLASS Vorfluter_Infiltrant =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  SZ_Grundwasservorkommen_V1_1.gerichteteLinie;
+    END Vorfluter_Infiltrant;
+
+    CLASS Grundwasserstrom =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  SZ_Grundwasservorkommen_V1_1.gerichteteLinie;
+    END Grundwasserstrom;
+
+    CLASS Karstwasserverbindung =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Verweildauer  :             0.00 .. 9999.99 [d];
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  SZ_Grundwasservorkommen_V1_1.gerichteteLinie;
+    END Karstwasserverbindung;
+
+    CLASS Spezialflaeche =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  SZ_Grundwasservorkommen_V1_1.Einzelflaeche;
+    END Spezialflaeche;
+
+    ASSOCIATION Gewissheitsgrad__Grundwasserleiter_Lockergestein =
+      rGewissheitsgrad (EXTERNAL)       --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Gewissheitsgrad;
+      rGrundwasserleiter_Lockergestein  --  {0..*}  Grundwasserleiter_Lockergestein;
+    END Gewissheitsgrad__Grundwasserleiter_Lockergestein;
+
+    ASSOCIATION Ueberlagerung__Grundwasserleiter_Lockergestein =
+      rUeberlagerung (EXTERNAL)         --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Ueberlagerung;
+      rGrundwasserleiter_Lockergestein  --  {0..*}  Grundwasserleiter_Lockergestein;
+    END Ueberlagerung__Grundwasserleiter_Lockergestein;
+
+    ASSOCIATION Druckverhaeltnis__Grundwasserleiter_Lockergestein =
+      rDruckverhaeltnis (EXTERNAL)      --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Druckverhaeltnis;
+      rGrundwasserleiter_Lockergestein  --  {0..*}  Grundwasserleiter_Lockergestein;
+    END Druckverhaeltnis__Grundwasserleiter_Lockergestein;
+
+    ASSOCIATION Maechtigkeit_Lockergestein__Grundwasserleiter_Lockergestein =
+      rMaechtigkeit_Lockergestein (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Maechtigkeit_Lockergestein;
+      rGrundwasserleiter_Lockergestein        --  {0..*}  Grundwasserleiter_Lockergestein;
+    END Maechtigkeit_Lockergestein__Grundwasserleiter_Lockergestein;
+
+    ASSOCIATION Lage__Grundwasserleiter_Lockergestein =
+      rLage (EXTERNAL)                  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Lage;
+      rGrundwasserleiter_Lockergestein  --  {0..*}  Grundwasserleiter_Lockergestein;
+    END Lage__Grundwasserleiter_Lockergestein;
+
+    ASSOCIATION Gewissheitsgrad__Grundwasserleiter_Festgestein =
+      rGewissheitsgrad (EXTERNAL)     --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Gewissheitsgrad;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Gewissheitsgrad__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Ueberlagerung__Grundwasserleiter_Festgestein =
+      rUeberlagerung (EXTERNAL)       --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Ueberlagerung;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Ueberlagerung__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Druckverhaeltnis__Grundwasserleiter_Festgestein =
+      rDruckverhaeltnis (EXTERNAL)    --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Druckverhaeltnis;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Druckverhaeltnis__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Typ__Grundwasserleiter_Festgestein =
+      rTyp (EXTERNAL)                 --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Typ;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Typ__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Erfassung__Grundwasserleiter_Festgestein =
+      rErfassung (EXTERNAL)           --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Erfassung;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Erfassung__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Maechtigkeit_Festgestein__Grundwasserleiter_Festgestein =
+      rMaechtigkeit (EXTERNAL)        --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Maechtigkeit_Festgestein;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Maechtigkeit_Festgestein__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Ergiebigkeit__Grundwasserleiter_Festgestein =
+      rErgiebigkeit (EXTERNAL)        --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Ergiebigkeit;
+      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+    END Ergiebigkeit__Grundwasserleiter_Festgestein;
+
+    ASSOCIATION Grundwasserstand__Isohypse =
+      rGrundwasserstand (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Grundwasserstand;
+      rIsohypse                     --  {0..*}  Isohypse;
+    END Grundwasserstand__Isohypse;
+
+    ASSOCIATION Druckniveau__Isohypse =
+      rDruckniveau (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Druckniveau;
+      rIsohypse                --  {0..*}  Isohypse;
+    END Druckniveau__Isohypse;
+
+    ASSOCIATION Grundwasserstand__Grundwasserstrom =
+      rGrundwasserstand (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Grundwasserstand;
+      rGrundwasserstrom             --  {0..*}  Grundwasserstrom;
+    END Grundwasserstand__Grundwasserstrom;
+
+    ASSOCIATION Gewissheitsgrad__Grundwasserstrom =
+      rGewissheitsgrad (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Gewissheitsgrad;
+      rGrundwasserstrom            --  {0..*}  Grundwasserstrom;
+    END Gewissheitsgrad__Grundwasserstrom;
+
+    ASSOCIATION Flaechentyp__Spezialflaeche =
+      rFlaechentyp (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Flaechentyp;
+      rSpezialflaeche          --  {0..*}  Spezialflaeche;
+    END Flaechentyp__Spezialflaeche;
+
+  END Fachdaten;
+
+END SZ_Grundwasservorkommen_V1_1.
