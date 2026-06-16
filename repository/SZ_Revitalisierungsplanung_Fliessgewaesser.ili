@@ -1,0 +1,274 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Planung der Revitalisierungen von Gewässern (Bereich Fliessgewässer)";
+!!@ shortDescription    = "Dieses Modell führt die Klassen der Revitalisierungsplanung von Fliessgewässern. Es orientiert sich an dem Bundesmodell und erweitert dieses punktuell. Die im Bundesmodell enthaltenen Klassen zur Ökomorphologie werden im Thema A026 behandelt.";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://ch-sz-geo.github.io/A180/docs/modelldokumentation.html";
+!!@ Themennummer        = "A180";
+!!@ iliCompilerVersion  = "ili2c-5.6.8-e6f7ab6dd5cdba29afc9b24866ecb98c057d82b2";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2023-12-22 | 1.0 | kep | Erstfassung
+!! 2026-04-15 | 2.0 | kep | Erweiterung aufgrund Rückmeldung der ersten Revitalisierungsplanung
+!!                          zusätzlich:
+!!                            - Überführung in die Version 2.4
+!!                            - Ergänzung BASKET OID, OID
+!!                            - Löschen von:
+!!                                - Bearbeitung.Stand
+!!==============================================================================
+MODEL SZ_Revitalisierungsplanung_Fliessgewaesser_V2 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-04-15" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1;
+    Linie = POLYLINE WITH (STRAIGHTS) VERTEX Punkt;
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      Name       :  MANDATORY  TEXT*255;
+      Code       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Bauaufwand EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Bauaufwand;
+
+    CLASS Bewertung EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Bewertung;
+
+    CLASS Massnahme EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Massnahme;
+
+    CLASS Nutzen EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Nutzen;
+
+    CLASS Potenzial EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Potenzial;
+
+    CLASS Praeferenz EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Praeferenz;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Abschnittsbewertung =
+      erfasstVon         :  MANDATORY  TEXT*100;
+      erfasstAm          :  MANDATORY  XMLDateTime;
+      geaendertVon       :  MANDATORY  TEXT*100;
+      geaendertAm        :  MANDATORY  XMLDateTime;
+      Achsgeometrie      :  MANDATORY  TEXT*8;
+      LinearpositionVon  :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis  :  MANDATORY  0.0 .. 999999.9;
+      Bemerkung          :             MTEXT*1000;
+    END Abschnittsbewertung;
+
+    CLASS Abschnittsnutzen =
+      erfasstVon         :  MANDATORY  TEXT*100;
+      erfasstAm          :  MANDATORY  XMLDateTime;
+      geaendertVon       :  MANDATORY  TEXT*100;
+      geaendertAm        :  MANDATORY  XMLDateTime;
+      Achsgeometrie      :  MANDATORY  TEXT*8;
+      LinearpositionVon  :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis  :  MANDATORY  0.0 .. 999999.9;
+      Bemerkung          :             MTEXT*1000;
+    END Abschnittsnutzen;
+
+    CLASS Abschnittsprioritaet =
+      erfasstVon         :  MANDATORY  TEXT*100;
+      erfasstAm          :  MANDATORY  XMLDateTime;
+      geaendertVon       :  MANDATORY  TEXT*100;
+      geaendertAm        :  MANDATORY  XMLDateTime;
+      Achsgeometrie      :  MANDATORY  TEXT*8;
+      LinearpositionVon  :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis  :  MANDATORY  0.0 .. 999999.9;
+      Frist              :  MANDATORY  0 .. 26;
+      Bemerkung          :             MTEXT*1000;
+    END Abschnittsprioritaet;
+
+    CLASS Bauwerksbewertung =
+      erfasstVon                    :  MANDATORY  TEXT*100;
+      erfasstAm                     :  MANDATORY  XMLDateTime;
+      geaendertVon                  :  MANDATORY  TEXT*100;
+      geaendertAm                   :  MANDATORY  XMLDateTime;
+      Identifikator_Quellsystem     :  MANDATORY  TEXT*15;
+      Identifikator_Analysesystem   :  MANDATORY  TEXT*15;
+      Identifikator_Bauwerk         :  MANDATORY  UUIDOID;
+      Sohlengefaelle                :             0.0 .. 999.9;
+      Habitatsvergroesserungsindex  :             0..10000;
+      hatFeldbegehung               :             BOOLEAN;
+      istNutzenoptimiert            :             BOOLEAN;
+      Bemerkung_Feldaufnahme        :             MTEXT*1000;
+      Bemerkung_Feldrelevanz        :             MTEXT*1000;
+      Bemerkung_Nutzen              :             MTEXT*1000;
+      Bemerkung_Plausibilisierung   :             MTEXT*1000;
+      Begruendung                   :             MTEXT*1000;
+      Massnahme                     :             MTEXT*1000;
+      Prioritaet                    :             MTEXT*1000;
+   END Bauwerksbewertung;
+
+    CLASS Bauwerksgruppe =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+   END Bauwerksgruppe;
+
+    CLASS Absturzbewertung =
+      erfasstVon                    :  MANDATORY  TEXT*100;
+      erfasstAm                     :  MANDATORY  XMLDateTime;
+      geaendertVon                  :  MANDATORY  TEXT*100;
+      geaendertAm                   :  MANDATORY  XMLDateTime;
+      Identifikator_Quellsystem     :  MANDATORY  TEXT*15;
+      Identifikator_Analysesystem   :  MANDATORY  TEXT*15;
+      Identifikator_Absturz         :  MANDATORY  UUIDOID;
+      Sohlengefaelle                :             0.0 .. 999.9;
+      Habitatsvergroesserungsindex  :             0..10000;
+      hatFeldbegehung               :             BOOLEAN;
+      istNutzenoptimiert            :             BOOLEAN;
+      Bemerkung_Feldaufnahme        :             MTEXT*1000;
+      Bemerkung_Feldrelevanz        :             MTEXT*1000;
+      Bemerkung_Nutzen              :             MTEXT*1000;
+      Bemerkung_Plausibilisierung   :             MTEXT*1000;
+      Begruendung                   :             MTEXT*1000;
+      Massnahme                     :             MTEXT*1000;
+      Prioritaet                    :             MTEXT*1000;
+   END Absturzbewertung;
+
+    CLASS Absturzgruppe =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+   END Absturzgruppe;
+
+    ASSOCIATION Bewertung__Abschnittsbewertung =
+      rBewertung (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Bewertung;
+      rAbschnittsbewertung   --  {0..*}  Abschnittsbewertung;
+    END Bewertung__Abschnittsbewertung;
+
+    ASSOCIATION Nutzen__Abschnittsnutzen =
+      rNutzen (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Nutzen;
+      rAbschnittsnutzen   --  {0..*}  Abschnittsnutzen;
+    END Nutzen__Abschnittsnutzen;
+
+    ASSOCIATION Massnahme__Abschnittsprioritaet =
+      rMassnahme (EXTERNAL)  --  {1..*}  SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Massnahme;
+      rAbschnittsprioritaet  --  {0..*}  Abschnittsprioritaet;
+    END Massnahme__Abschnittsprioritaet;
+
+    ASSOCIATION Bauwerksgruppe__Bauwerksbewertung =
+      rGruppe   --  {1}     Bauwerksgruppe;
+      rBauwerk  --  {0..*}  Bauwerksbewertung;
+    END Bauwerksgruppe__Bauwerksbewertung;
+
+    ASSOCIATION Bauaufwand__Bauwerksbewertung =
+      rBauaufwand (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Bauaufwand;
+      rBauwerksbewertung      --  {0..*}  Bauwerksbewertung;
+    END Bauaufwand__Bauwerksbewertung;
+
+    ASSOCIATION Potenzial__Bauwerksbewertung =
+      rPotenzial (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Potenzial;
+      rBauwerksbewertung     --  {0..*}  Bauwerksbewertung;
+    END Potenzial__Bauwerksbewertung;
+
+    ASSOCIATION Praeferenz__Bauwerksbewertung =
+      rPraeferenz (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Praeferenz;
+      rBauwerksbewertung      --  {0..*}  Bauwerksbewertung;
+    END Praeferenz__Bauwerksbewertung;
+
+    ASSOCIATION GISNutzen__Bauwerksbewertung =
+      rGISNutzen (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Bewertung;
+      rBauwerksbewertung     --  {0..*}  Bauwerksbewertung;
+    END GISNutzen__Bauwerksbewertung;
+
+    ASSOCIATION Nutzen__Bauwerksbewertung =
+      rNutzen (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Nutzen;
+      rBauwerksbewertung  --  {0..*}  Bauwerksbewertung;
+    END Nutzen__Bauwerksbewertung;
+
+    ASSOCIATION Absturzgruppe__Absturzbewertung =
+      rGruppe   --  {1}     Absturzgruppe;
+      rAbsturz  --  {0..*}  Absturzbewertung;
+    END Absturzgruppe__Absturzbewertung;
+
+    ASSOCIATION Bauaufwand__Absturzbewertung =
+      rBauaufwand (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Bauaufwand;
+      rAbsturzbewertung       --  {0..*}  Absturzbewertung;
+    END Bauaufwand__Absturzbewertung;
+
+    ASSOCIATION Potenzial__Absturzbewertung =
+      rPotenzial (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Potenzial;
+      rBauwerksbewertung     --  {0..*}  Absturzbewertung;
+    END Potenzial__Absturzbewertung;
+
+    ASSOCIATION Praeferenz__Absturzbewertung =
+      rPraeferenz (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Praeferenz;
+      rBauwerksbewertung      --  {0..*}  Absturzbewertung;
+    END Praeferenz__Absturzbewertung;
+
+    ASSOCIATION GISNutzen__Absturzbewertung =
+      rGISNutzen (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Bewertung;
+      rAbsturzbewertung      --  {0..*}  Absturzbewertung;
+    END GISNutzen__Absturzbewertung;
+
+    ASSOCIATION Nutzen__Absturzbewertung =
+      rNutzen (EXTERNAL)  --  {1}     SZ_Revitalisierungsplanung_Fliessgewaesser_V2.Stammdaten.Nutzen;
+      rAbsturzbewertung   --  {0..*}  Absturzbewertung;
+    END Nutzen__Absturzbewertung;
+
+  END Fachdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Metadaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Bearbeitung =
+      erfasstVon     :  MANDATORY  TEXT*100;
+      erfasstAm      :  MANDATORY  XMLDateTime;
+      geaendertVon   :  MANDATORY  TEXT*100;
+      geaendertAm    :  MANDATORY  XMLDateTime;
+      Referenzdaten  :  MANDATORY  XMLDate;
+      Bemerkung      :             MTEXT*1000;
+    END Bearbeitung;
+
+    ASSOCIATION Bearbeitung__Bearbeitung =
+      rBearbeitungSingleton   -<#>  {1}  Bearbeitung;
+      rBearbeitung            --    {1}  Bearbeitung;
+    END Bearbeitung__Bearbeitung;
+
+  END Metadaten;
+
+END SZ_Revitalisierungsplanung_Fliessgewaesser_V2.
