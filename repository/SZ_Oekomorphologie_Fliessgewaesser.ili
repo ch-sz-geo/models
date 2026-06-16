@@ -1,0 +1,360 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Ökomorpholigie der Fliessgewässer";
+!!@ shortDescription    = "Dieses Modell führt die Klassen der Revitalisierungsplanung von Fliessgewässern. Es orientiert sich an dem Bundesmodell und fokussiert auf die Ökomorphologie. Die im Bundesmodell zusätzlich enthaltenen Klassen zur Revitalisierungsplanung sind im Thema A180 behandelt.";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A026";
+!!@ iliCompilerVersion  = "ili2c-5.6.8-e6f7ab6dd5cdba29afc9b24866ecb98c057d82b2";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2024-01-04 | 1.0 | kep | Erstfassung
+!!                          Modellgrundlagen:
+!!                            - Stufe Kanton: "SZ_RevitalisierungGewaesser_V1_Erfassung"
+!!                            - Stufe Bund: "Revitalisierung_Fliessgewaesser_V1_2"
+!!                          Unterschiede zur Modellgrundlage:
+!!                            - Einführung OID
+!!                            - Aufzählungen sind als Kataloge modelliert
+!!                            - Modellierung der Strukturen "Linearpunkt" und "Linearsegment" in den entsprechenden Klassen
+!!                            - Attribut AbschOekomorph.Eindolung gelöscht, da redundant mit Wert in AbschOekomorph.Klasse ==> eingedolt
+!!                            - Verzicht auf Modellimport "Units"
+!!                            - Standardattribute hinzugefügt
+!! 2024-07-24 | 1.1 | kep | Umsetzung neuer Anforderung: Bei Abstürzen und Bauwerken sollen auf bestehende Objekte des Themas "Schutzbauten Naturgefahren (Prozessbereich Wasser) (A127)" verwiesen werden können.
+!!                            - neu: Absturz.Schutzbauten_ID
+!!                            - neu: Bauwerk.Schutzbauten_ID
+!! 2025-05-12 | 2.0 | kep | Anpassungen:
+!!                            - INTERLIS-Version 2.4
+!!                            - Einführung BID
+!!                            - Ergänzung von "Bauwerksnutzen"
+!!                            - Löschen von:
+!!                                - Bearbeitung.Stand
+!!                                - CLASS Nutzen
+!!                                - Absturz.Bemerkung_Nutzen
+!!                                - ASSOCIATION Nutzen__Absturz
+!!==============================================================================
+MODEL SZ_Oekomorphologie_Fliessgewaesser_V2 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2025-05-12" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      Name       :  MANDATORY  TEXT*255;
+      Code       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    !! Kataloge der Klasse AbschOekomorph
+    !! ----------------------------------
+    CLASS Breitenvariabilitaet EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Breitenvariabilitaet;
+
+    CLASS Tiefenvariabilitaet EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Tiefenvariabilitaet;
+
+    CLASS Sohlenverbauung EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Sohlenverbauung;
+
+    CLASS Sohlmaterial EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Sohlmaterial;
+
+    CLASS Boeschungsfussverbau EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Boeschungsfussverbau;
+
+    CLASS Boeschungsmaterial EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Boeschungsmaterial;
+
+    CLASS Uferbeschaffenheit EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Uferbeschaffenheit;
+
+    CLASS Bewuchs EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Bewuchs;
+
+    CLASS Totholz EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Totholz;
+
+    CLASS Klasse EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Klasse;
+
+    CLASS Uferbereich EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Uferbereich;
+
+    CLASS Umlandnutzung EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Umlandnutzung;
+
+    CLASS Gefaelle EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Gefaelle;
+
+    CLASS Laichsubstrat EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Laichsubstrat;
+
+    !! Kataloge der Klasse Absturz
+    !! ---------------------------
+    CLASS Absturztyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Absturztyp;
+
+    CLASS Absturzmaterial EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Absturzmaterial;
+
+    !! Kataloge der Klasse Bauwerk
+    !! ---------------------------
+    CLASS Bauwerktyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Bauwerktyp;
+
+  END Stammdaten;
+!!------------------------------------------------------------------------------
+  TOPIC Oekomorphologie =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS AbschOekomorph =
+      Kennung               :  MANDATORY  TEXT*20;
+      erfasstVon            :  MANDATORY  TEXT*100;
+      erfasstAm             :  MANDATORY  XMLDateTime;
+      geaendertVon          :  MANDATORY  TEXT*100;
+      geaendertAm           :  MANDATORY  XMLDateTime;
+      Achsgeometrie         :  MANDATORY  TEXT*8;
+      LinearpositionVon     :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis     :  MANDATORY  0.0 .. 999999.9;
+      Sohlenbreite          :  MANDATORY  0.00 .. 1000.00;
+      UferbreiteLinks       :  MANDATORY  0.00 .. 1000.00;
+      UferbreiteRechts      :  MANDATORY  0.00 .. 1000.00;
+      Erhebungsdatum        :             XMLDate;
+      hatVieleNatAbstuerze  :             BOOLEAN;
+      Bemerkung             :             MTEXT*1000;
+      UNIQUE Kennung;
+      MANDATORY CONSTRAINT (LinearpositionBis > LinearpositionVon);
+    END AbschOekomorph;
+
+    CLASS Absturz  =
+      Kennung           :  MANDATORY  TEXT*10;
+      erfasstVon        :  MANDATORY  TEXT*100;
+      erfasstAm         :  MANDATORY  XMLDateTime;
+      geaendertVon      :  MANDATORY  TEXT*100;
+      geaendertAm       :  MANDATORY  XMLDateTime;
+      Achsgeometrie     :  MANDATORY  TEXT*8;
+      Linearposition    :  MANDATORY  0.0 .. 999999.9;
+      Schutzbauten_ID   :             TEXT*25;
+      Hoehe             :  MANDATORY  0 .. 30000;
+      Erhebungsdatum    :             XMLDate;
+      Bemerkung         :             MTEXT*1000;
+      UNIQUE Kennung;
+    END Absturz;
+
+    CLASS Bauwerk  =
+      Kennung          :  MANDATORY  TEXT*10;
+      erfasstVon       :  MANDATORY  TEXT*100;
+      erfasstAm        :  MANDATORY  XMLDateTime;
+      geaendertVon     :  MANDATORY  TEXT*100;
+      geaendertAm      :  MANDATORY  XMLDateTime;
+      Achsgeometrie    :  MANDATORY  TEXT*8;
+      Linearposition   :  MANDATORY  0.0 .. 999999.9;
+      Schutzbauten_ID  :             TEXT*25;
+      Querabstand      :            -99.9  ..  99.9;
+      Hoehe            :  MANDATORY  0 .. 30000;
+      Erhebungsdatum   :             XMLDate;
+      Bemerkung        :             MTEXT*1000;
+      UNIQUE Kennung;
+    END Bauwerk;
+
+    ASSOCIATION AbschOekPotenzial__Absturz =
+      rAbschnitt  --  {0..1}  AbschOekomorph;
+      rAbsturz    --  {0..*}  Absturz;                
+    END AbschOekPotenzial__Absturz;
+
+    ASSOCIATION AbschOekPotenzial__Bauwerk =
+      rAbschnitt  --  {1}     AbschOekomorph;
+      rBauwerk    --  {0..*}  Bauwerk;                
+    END AbschOekPotenzial__Bauwerk;
+
+    !! Beziehungen zu den Stammdaten für die Klasse AbschOekomorph
+    !! -----------------------------------------------------------
+    ASSOCIATION Breitenvariabilitaet__AbschOekomorph =
+      rBreitenvariabilitaet (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Breitenvariabilitaet;
+      rAbschOekomorph                   --  {0..*}  AbschOekomorph;
+    END Breitenvariabilitaet__AbschOekomorph;
+
+    ASSOCIATION Tiefenvariabilitaet__AbschOekomorph =
+      rTiefenvariabilitaet (EXTERNAL)  --  {0..1}  SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Tiefenvariabilitaet;
+      rAbschOekomorph                  --  {0..*}  AbschOekomorph;
+    END Tiefenvariabilitaet__AbschOekomorph;
+
+    ASSOCIATION Sohlenverbauung__AbschOekomorph =
+      rSohlenverbauung (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Sohlenverbauung;
+      rAbschOekomorph              --  {0..*}  AbschOekomorph;
+    END Sohlenverbauung__AbschOekomorph;
+
+    ASSOCIATION Sohlmaterial__AbschOekomorph =
+      rSohlmaterial (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Sohlmaterial;
+      rAbschOekomorph           --  {0..*}  AbschOekomorph;
+    END Sohlmaterial__AbschOekomorph;
+
+    ASSOCIATION BoeschungsfussverbauLinks__AbschOekomorph =
+      rBoeschungsfussverbauLinks (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Boeschungsfussverbau;
+      rAbschOekomorph                        --  {0..*}  AbschOekomorph;
+    END BoeschungsfussverbauLinks__AbschOekomorph;
+
+    ASSOCIATION BoeschungsfussverbauRechts__AbschOekomorph =
+      rBoeschungsfussverbauRechts (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Boeschungsfussverbau;
+      rAbschOekomorph                         --  {0..*}  AbschOekomorph;
+    END BoeschungsfussverbauRechts__AbschOekomorph;
+
+    ASSOCIATION BoeschungsmaterialLinks__AbschOekomorph =
+      rBoeschungsmaterialLinks (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Boeschungsmaterial;
+      rAbschOekomorph                      --  {0..*}  AbschOekomorph;
+    END BoeschungsmaterialLinks__AbschOekomorph;
+
+    ASSOCIATION BoeschungsmaterialRechts__AbschOekomorph =
+      rBoeschungsmaterialRechts (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Boeschungsmaterial;
+      rAbschOekomorph                       --  {0..*}  AbschOekomorph;
+    END BoeschungsmaterialRechts__AbschOekomorph;
+
+    ASSOCIATION UferbeschaffenheitLinks__AbschOekomorph =
+      rUferbeschaffenheitLinks (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Uferbeschaffenheit;
+      rAbschOekomorph                      --  {0..*}  AbschOekomorph;
+    END UferbeschaffenheitLinks__AbschOekomorph;
+
+    ASSOCIATION UferbeschaffenheitRechts__AbschOekomorph =
+      rUferbeschaffenheitRechts (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Uferbeschaffenheit;
+      rAbschOekomorph                       --  {0..*}  AbschOekomorph;
+    END UferbeschaffenheitRechts__AbschOekomorph;
+
+    ASSOCIATION Algenbewuchs__AbschOekomorph =
+      rAlgenbewuchs (EXTERNAL)  --  {0..1}  SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Bewuchs;
+      rAbschOekomorph           --  {0..*}  AbschOekomorph;
+    END Algenbewuchs__AbschOekomorph;
+
+    ASSOCIATION Makrophytenbewuchs__AbschOekomorph =
+      rMakrophytenbewuchs (EXTERNAL)  --  {0..1}  SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Bewuchs;
+      rAbschOekomorph                 --  {0..*}  AbschOekomorph;
+    END Makrophytenbewuchs__AbschOekomorph;
+
+    ASSOCIATION Totholz__AbschOekomorph =
+      rTotholz (EXTERNAL)  --  {0..1}  SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Totholz;
+      rAbschOekomorph      --  {0..*}  AbschOekomorph;
+    END Totholz__AbschOekomorph;
+
+    ASSOCIATION Klasse__AbschOekomorph =
+      rKlasse (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Klasse;
+      rAbschOekomorph     --  {0..*}  AbschOekomorph;
+    END Klasse__AbschOekomorph;
+
+    ASSOCIATION UferbereichLinks__AbschOekomorph =
+      rUferbereichLinks (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Uferbereich;
+      rAbschOekomorph               --  {0..*}  AbschOekomorph;
+    END UferbereichLinks__AbschOekomorph;
+
+    ASSOCIATION UferbereichRechts__AbschOekomorph =
+      rUferbereichRechts (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Uferbereich;
+      rAbschOekomorph                --  {0..*}  AbschOekomorph;
+    END UferbereichRechts__AbschOekomorph;
+
+    ASSOCIATION UmlandnutzungLinks__AbschOekomorph =
+      rUmlandnutzungLinks (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Umlandnutzung;
+      rAbschOekomorph                 --  {0..*}  AbschOekomorph;
+    END UmlandnutzungLinks__AbschOekomorph;
+
+    ASSOCIATION UmlandnutzungRechts__AbschOekomorph =
+      rUmlandnutzungRechts (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Umlandnutzung;
+      rAbschOekomorph                  --  {0..*}  AbschOekomorph;
+    END UmlandnutzungRechts__AbschOekomorph;
+
+    ASSOCIATION Gefaelle__AbschOekomorph =
+      rGefaelle (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Gefaelle;
+      rAbschOekomorph       --  {0..*}  AbschOekomorph;
+    END Gefaelle__AbschOekomorph;
+
+    ASSOCIATION Laichsubstrat__AbschOekomorph =
+      rLaichsubstrat (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Laichsubstrat;
+      rAbschOekomorph            --  {0..*}  AbschOekomorph;
+    END Laichsubstrat__AbschOekomorph;
+
+    !! Beziehungen zu den Stammdaten für die Klasse Absturz
+    !! ----------------------------------------------------
+    ASSOCIATION Absturztyp__Absturz =
+      rAbsturztyp (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Absturztyp;
+      rAbsturz                --  {0..*}  Absturz;
+    END Absturztyp__Absturz;
+
+    ASSOCIATION Absturzmaterial__Absturz =
+      rAbsturzmaterial (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Absturzmaterial;
+      rAbsturz                     --  {0..*}  Absturz;
+    END Absturzmaterial__Absturz;
+
+    !! Beziehungen zu den Stammdaten für die Klasse Bauwerk
+    !! ----------------------------------------------------
+    ASSOCIATION Bauwerktyp__Bauwerk =
+      rBauwerktyp (EXTERNAL)  --  {1}     SZ_Oekomorphologie_Fliessgewaesser_V2.Stammdaten.Bauwerktyp;
+      rAbsturzNutzen          --  {0..*}  Bauwerk;
+    END Bauwerktyp__Bauwerk;
+
+  END Oekomorphologie;
+
+!!------------------------------------------------------------------------------
+  TOPIC Metadaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Bearbeitung =
+      erfasstVon     :  MANDATORY  TEXT*100;
+      erfasstAm      :  MANDATORY  XMLDateTime;
+      geaendertVon   :  MANDATORY  TEXT*100;
+      geaendertAm    :  MANDATORY  XMLDateTime;
+      Referenzdaten  :  MANDATORY  XMLDate;
+      Bemerkung      :             MTEXT*1000;
+    END Bearbeitung;
+
+    ASSOCIATION Bearbeitung__Bearbeitung =
+      rBearbeitungSingleton  -<#>  {1}  Bearbeitung;
+      rBearbeitung           --    {1}  Bearbeitung;
+    END Bearbeitung__Bearbeitung;
+
+  END Metadaten;
+
+END SZ_Oekomorphologie_Fliessgewaesser_V2.
