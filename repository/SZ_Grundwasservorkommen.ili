@@ -5,17 +5,18 @@ INTERLIS 2.4;
 !!@ technicalContact    = "mailto:geoportal@sz.ch";
 !!@ furtherInformation  = "https://www.sz.ch";
 !!@ Themennummer        = "A027";
-!!@ Compiler-Version    = "ili2c-5.6.7-d72067b5afa50db9409d1c10d99110fbc8bcca20";
+!!@ Compiler-Version    = "ili2c-5.6.8-e6f7ab6dd5cdba29afc9b24866ecb98c057d82b2";
 !!------------------------------------------------------------------------------
 !!      Version     | wer | was
 !! Datum      | Nr  |     |
 !!------------------------------------------------------------------------------
+!! 2026-07-21 | 1.1 | Kep | Anpassung des Rollennamens von "rMaechtigkeit" auf "rMaechtigkeit_Festgestein"
 !! 2026-04-16 | 1.1 | MG  | Ergänzung der Assoziation Grundwasserstrom - Grundwasserstand
 !! 2025-12-09 | 1.0 | Kep | Erstfassung
 !!==============================================================================
 MODEL SZ_Grundwasservorkommen_V1_1 (de)
   AT "https://models.geo.sz.ch"
-  VERSION "2026-04-16"  =
+  VERSION "2026-07-21"  =
 
   IMPORTS UNQUALIFIED INTERLIS;
 
@@ -229,8 +230,8 @@ MODEL SZ_Grundwasservorkommen_V1_1 (de)
     END Erfassung__Grundwasserleiter_Festgestein;
 
     ASSOCIATION Maechtigkeit_Festgestein__Grundwasserleiter_Festgestein =
-      rMaechtigkeit (EXTERNAL)        --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Maechtigkeit_Festgestein;
-      rGrundwasserleiter_Festgestein  --  {0..*}  Grundwasserleiter_Festgestein;
+      rMaechtigkeit_Festgestein (EXTERNAL)  --  {1}     SZ_Grundwasservorkommen_V1_1.Stammdaten.Maechtigkeit_Festgestein;
+      rGrundwasserleiter_Festgestein        --  {0..*}  Grundwasserleiter_Festgestein;
     END Maechtigkeit_Festgestein__Grundwasserleiter_Festgestein;
 
     ASSOCIATION Ergiebigkeit__Grundwasserleiter_Festgestein =
