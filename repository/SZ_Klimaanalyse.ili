@@ -1,0 +1,179 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Klimaanalyse";
+!!@ shortDescription    = "Diese Modell beschreibt die in der Klimaanalyse erzeugten Vektordaten wie Windfeld, Kaltluftprozesse und Basisgeometrien";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A250";
+!!@ iliCompilerVersion  = "ili2c-5.6.7-d72067b5afa50db9409d1c10d99110fbc8bcca20";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2026-06-02 | 1.0 | ZM  | Erstfassung
+!!==============================================================================
+MODEL SZ_Klimaanalyse_V1 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-06-02" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+    Punkt =
+      COORD 2669342.500 .. 2721642.500 [m]     !! BB ausgedehnter als üblich, da Windvektordaten über die übliche BB hinausgehen 
+           ,1190612.500 .. 1233812.500 [m]     !! BB ausgedehnter als üblich, da Windvektordaten über die übliche BB hinausgehen 
+           ,ROTATION 2 -> 1;
+    Polygon = AREA WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.001;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) = 
+      Name       :  MANDATORY  TEXT*255;
+      Code       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Prozesstyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Prozesstyp;
+
+    CLASS Aggregationsstufe EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Aggregationsstufe;
+
+    CLASS Landnutzungsklasse EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name; 
+    END Landnutzungsklasse;
+
+    CLASS Wirkungstyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name; 
+    END Wirkungstyp;
+
+    CLASS Aufenthaltsqualitaet EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name; 
+    END Aufenthaltsqualitaet;
+
+    CLASS Kuehlungspotential EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name; 
+    END Kuehlungspotential;
+
+    CLASS Schutzbedarf EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name; 
+    END Schutzbedarf;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Klimaanalyse_V1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Kaltluftprozess =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Windrichtung  :  MANDATORY  0 .. 359;
+      Beschreibung  :             MTEXT*1000;
+      Geometrie     :  MANDATORY  Punkt;
+    END Kaltluftprozess;
+
+    CLASS Windfeld =
+      erfasstVon       :  MANDATORY  TEXT*100;
+      erfasstAm        :  MANDATORY  XMLDateTime;
+      geaendertVon     :  MANDATORY  TEXT*100;
+      geaendertAm      :  MANDATORY  XMLDateTime;
+      Windrichtung     :  MANDATORY  0.0 .. 359.9;
+      Geschwindigkeit  :  MANDATORY  0.0 .. 999.0;
+      uWert            :            -99.0 .. 99.0;
+      vWert            :            -99.0 .. 99.0;
+      Geometrie        :  MANDATORY  Punkt;
+    END Windfeld;
+
+    CLASS Basisgeometrie (ABSTRACT) =
+      erfasstVon                    :  MANDATORY  TEXT*100;
+      erfasstAm                     :  MANDATORY  XMLDateTime;
+      geaendertVon                  :  MANDATORY  TEXT*100;
+      geaendertAm                   :  MANDATORY  XMLDateTime;
+      TemperaturNacht               :  MANDATORY -1.0 .. 99.0;
+      WindgeschwindigkeitNacht      :  MANDATORY  0.0 .. 99.0;
+      KaltlufvolumenstromNacht      :  MANDATORY  0.0 .. 999.0;
+      KaltluftproduktionsrateNacht  :  MANDATORY  0.0 .. 999.0;
+      PET                           :  MANDATORY  0.0 .. 99.0;
+      BeschreibungPHK               :  MANDATORY  MTEXT*1000;
+      Geometrie                     :  MANDATORY  Polygon;
+    END Basisgeometrie;
+
+    CLASS Wirkungsraum EXTENDS Basisgeometrie = 
+      BeschreibungTag    :  MANDATORY  MTEXT*1000;
+      BeschreibungNacht  :  MANDATORY  MTEXT*1000;
+    END Wirkungsraum;
+
+    CLASS Ausgleichsraum EXTENDS Basisgeometrie = 
+      BeschreibungNacht  :  MANDATORY  MTEXT*1000;
+    END Ausgleichsraum;
+
+    CLASS Restflaeche EXTENDS Basisgeometrie =
+    END Restflaeche;
+
+    ASSOCIATION Prozesstyp__Kaltluftprozess =
+      rProzesstyp (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Prozesstyp;
+      rKaltluftprozess        --  {0..*}  Kaltluftprozess;
+    END Prozesstyp__Kaltluftprozess;
+
+    ASSOCIATION Aggregationsstufe__Windfeld =
+      rAggregationsstufe (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Aggregationsstufe;
+      rWindfeld                      --  {0..*}  Windfeld;
+    END Aggregationsstufe__Windfeld;
+
+    ASSOCIATION Landnutzungsklasse__Basisgeometrie =
+      rLandnutzungsklasse (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Landnutzungsklasse;
+      rBasisgeometrie                 --  {0..*}  Basisgeometrie;
+    END Landnutzungsklasse__Basisgeometrie;
+
+    ASSOCIATION BewertungTag__Wirkungsraum =
+      rBewertungTag (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Wirkungstyp;
+      rWirkungsraum             --  {0..*}  Wirkungsraum;
+    END BewertungTag__Wirkungsraum;
+
+    ASSOCIATION BewertungNacht__Wirkungsraum =
+      rBewertungNacht (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Wirkungstyp;
+      rWirkungsraum               --  {0..*}  Wirkungsraum;
+    END BewertungNacht__Wirkungsraum;
+
+    ASSOCIATION Handlungsbedarf__Wirkungsraum =
+      rHandlungsbedarf (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Wirkungstyp;
+      rWirkungsraum                --  {0..*}  Wirkungsraum;
+    END Handlungsbedarf__Wirkungsraum;
+
+    ASSOCIATION Aufenthaltsqualitaet__Ausgleichsraum =
+      rAufenthaltsqualitaet (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Aufenthaltsqualitaet;
+      rAusgleichsraum                   --  {0..*}  Ausgleichsraum;
+    END Aufenthaltsqualitaet__Ausgleichsraum;
+
+    ASSOCIATION Kuehlungspotential__Ausgleichsraum =
+      rKuehlungspotential (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Kuehlungspotential;
+      rAusgleichsraum                 --  {0..*}  Ausgleichsraum;
+    END Kuehlungspotential__Ausgleichsraum;
+
+    ASSOCIATION Schutzbedarf__Ausgleichsraum =
+      rSchutzbedarf (EXTERNAL)  --  {1}     SZ_Klimaanalyse_V1.Stammdaten.Schutzbedarf;
+      rAusgleichsraum           --  {0..*}  Ausgleichsraum;
+    END Schutzbedarf__Ausgleichsraum;
+
+  END Fachdaten; 
+
+END SZ_Klimaanalyse_V1.
