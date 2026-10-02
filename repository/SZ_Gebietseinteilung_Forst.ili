@@ -1,0 +1,109 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Gebietseinteilung Forst";
+!!@ shortDescription    = "Einteilung des Kantonsgebietes in Forstkreise und Forstgebiete gemäss der kantonalen Verordnung zum Waldgesetz (SRSZ 313.111)";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A246";
+!!@ Compiler-Version    = "ili2c-5.6.3-720ae8bf5621734004b9d234fde4d2fe9556b943";
+!!------------------------------------------------------------------------------
+!! Todo: - - -
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2025-01-24 | 1.0 | Kep | Erstfassung
+!!==============================================================================
+MODEL SZ_Gebietseinteilung_Forst (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2025-01-24" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1;
+
+    Gebietseinteilung =
+      AREA WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.001;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+!!------------------------------------------------------------------------------
+    CLASS Forstkreis =
+      OID AS UUIDOID;
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Nummer        :  MANDATORY  1..9;
+      Bezeichnung   :  MANDATORY  TEXT*100;
+      Bemerkung     :             MTEXT*1000;
+      UNIQUE Nummer;
+    END Forstkreis;
+
+    CLASS Forstrevier =
+      OID AS UUIDOID;
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Nummer        :  MANDATORY  1..99;
+      Bezeichnung   :             TEXT*100;
+      Bemerkung     :             MTEXT*1000;
+      UNIQUE Nummer;
+    END Forstrevier;
+
+    CLASS Gebiet =
+      OID AS UUIDOID;
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Bemerkung     :             MTEXT*1000;
+      Geometrie     :  MANDATORY  Gebietseinteilung;
+    END Gebiet;
+
+    CLASS Person =
+      OID AS UUIDOID;
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Vorname       :             TEXT*50;
+      Nachname      :             TEXT*50;
+      Strasse       :             TEXT*50;
+      Hausnummer    :             TEXT*10;
+      Zusatzzeile   :             TEXT*100;
+      PLZ           :             1000..9999;
+      Ort           :             TEXT*50;
+      Tel_G         :             TEXT*20;
+      Tel_M         :             TEXT*20;
+      E_Mail        :             TEXT*100;
+    END Person;
+
+    ASSOCIATION Forstkreis__Forstrevier =
+      rForstkreis   --  {1}     Forstkreis;
+      rForstrevier  --  {0..*}  Forstrevier;
+    END Forstkreis__Forstrevier;
+
+    ASSOCIATION Forstrevier__Gebiet =
+      rForstrevier  --  {1}     Forstrevier;
+      rGebiet       --  {0..*}  Gebiet;
+    END Forstrevier__Gebiet;
+
+    ASSOCIATION Person__Forstkreis =
+      rKreisfoerster  --  {0..*}  Person;
+      rForstkreis     --  {0..*}  Forstkreis;
+    END Person__Forstkreis;
+
+    ASSOCIATION Person__Forstrevier =
+      rRevierfoerster  --  {0..*}  Person;
+      rForstrevier     --  {0..*}  Forstrevier;
+    END Person__Forstrevier;
+
+  END Fachdaten;
+
+END SZ_Gebietseinteilung_Forst.
