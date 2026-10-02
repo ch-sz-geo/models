@@ -1,0 +1,141 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Revitalisierung von Seen; abgeändertes Bundesmodell";
+!!@ shortDescription    = "Dieses Modell beschreibt die Revitalisierung von Seen entsprechend den kantonalen Erhebungen";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://ch-sz-geo.github.io/A163/docs/modelldokumentation.html";
+!!@ Identifikator       = "191.2";
+!!@ Themennummer        = "A163";
+!!@ iliCompilerVersion  = "ili2c-5.6.3-720ae8bf5621734004b9d234fde4d2fe9556b943";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2025-01-17 | 1.2 | Kep | Änderungen an Klassen:
+!!                            - Resultat_Plan_C_D
+!!                            - Aufwertungspotential
+!!                            - Nutzen
+!!                          Änderungen an Attributen:
+!!                            - alle Datentypen der Attribute "Bemerkung" als MTEXT
+!!                            - Umbenennungen:
+!!                              - OekomorphologieSeeufer.Gesamtbeurteilung_Oekomorphologie ==> OekomorphologieSeeufer.Gesamtbeurteilung
+!!                              - Methode_IGKB.Gesamtbeurteilung_gewichtet ==> Methode_IGKB.gewichtete_Gesamtbeurteilung
+!!                          Modellierung in INTERLIS-Sprachversion 2.4 
+!! 2023-10-10 | 1.1 | Kep | Nachführung der Modellanpassungen des Bundes
+!! 2020-08-11 | 1.0 | TH  | Erstfassung
+!!==============================================================================
+MODEL SZ_Revitalisierung_Seen_V1_2 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2025-01-17" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    Methode = (
+       BAFU
+      ,IGKB
+      ,andere
+    );
+
+    Beurteilung = (
+       naturnah_natuerlich
+      ,wenig_beeintraechtigt
+      ,beeintraechtigt
+      ,naturfremd
+      ,kuenstlich
+      ,nicht_bestimmt
+    );
+
+!!------------------------------------------------------------------------------
+ TOPIC RevitalisierungSeen =
+!!------------------------------------------------------------------------------
+    CLASS OekomorphologieSeeufer =
+      Kennung                     :  MANDATORY  TEXT*20;
+      Achsgeometrie               :  MANDATORY  TEXT*5;
+      LinearpositionVon           :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis           :             0.0 .. 999999.9;
+      Methode                     :  MANDATORY  Methode;
+      Bezeichnung_andere_Methode  :             TEXT*255;
+      Aufnahmezeitpunkt           :  MANDATORY  XMLDate;
+      Gesamtbeurteilung           :  MANDATORY  Beurteilung;
+      Bildpfad                    :             TEXT*255;
+      Bemerkung                   :             MTEXT*500;
+      UNIQUE Kennung;
+    END OekomorphologieSeeufer;
+
+    CLASS Methode_BAFU EXTENDS OekomorphologieSeeufer =
+      Oekomorphologie_gesamt           :  MANDATORY  0.00 .. 1.00;
+      Oekomorphologie_Flachwasserzone  :             0.00 .. 1.00;
+      Oekomorphologie_Uferstreifen     :             0.00 .. 1.00;
+      Oekomorphologie_Uferlinie        :             0.00 .. 1.00;
+      Oekomorphologie_Hinterland       :             0.00 .. 1.00;
+      Nutzung_Uferstreifen             :             0.00 .. 1.00;
+    END Methode_BAFU;
+
+    CLASS Methode_IGKB EXTENDS OekomorphologieSeeufer =
+      Gesamtbeurteilung_gewichtet  :  MANDATORY  0.00 .. 9.99;
+      Uferlinie                    :             1 .. 5;
+      Deltabildung                 :            -1 .. 5;
+      Ufersubstrat                 :             1 .. 5;
+      Litoralsubstrat              :            -1 .. 5;
+      Totholz                      :            -1 .. 5;
+      Hindernisse                  :             1 .. 5;
+      Uferverbauung                :             1 .. 5;
+      Durchgaengigkeit             :            -1 .. 5;
+      Ufervegetation_landseitig    :             1 .. 5;
+      Roehricht                    :            -1 .. 5;
+      Makrophyten                  :            -1 .. 5;
+      Veralgung                    :             1 .. 5;
+      Stoerfrequenz                :             1 .. 5;
+      Kinderstube                  :             1 .. 5;
+      Anbindung_Hinterland         :             1 .. 5;
+      Ufertyp                      :             1 .. 4;
+      Breite_Flachwasserzone       :             TEXT*20;
+      Treibgut                     :             1 .. 5;
+      Erosion                      :             1 .. 5;
+      Erholung                     :            -1 .. 5;
+      Kulturwert                   :            -1 .. 3;
+      Strandrasen                  :            -1 .. 5;
+    END Methode_IGKB;
+
+    CLASS Resultat_Plan_B_E_F (ABSTRACT) =
+      Kennung            :  MANDATORY  TEXT*20;
+      Achsgeometrie      :  MANDATORY  TEXT*5;
+      LinearpositionVon  :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis  :             0.0 .. 999999.9;
+      Bemerkung          :             MTEXT*500;
+      UNIQUE Kennung;
+    END Resultat_Plan_B_E_F;
+
+    CLASS Oek_L_Bedeutung EXTENDS Resultat_Plan_B_E_F =
+      Oek_LS_Bedeutung  :  MANDATORY  0.7 .. 1.3;
+    END Oek_L_Bedeutung;
+
+    CLASS Nutzen_Aufwand EXTENDS Resultat_Plan_B_E_F =
+      Nutzen_NL_Aufwand  :  MANDATORY  1 .. 3;
+    END Nutzen_Aufwand;
+
+    CLASS Umsetzung EXTENDS Resultat_Plan_B_E_F =
+      Zeitfenster_geplante_Umsetzung  :  MANDATORY  0 .. 26;
+    END Umsetzung;
+
+    CLASS Resultat_Plan_C_D (ABSTRACT) =
+      Kennung            :  MANDATORY  TEXT*20;
+      Achsgeometrie      :  MANDATORY  TEXT*5;
+      LinearpositionVon  :  MANDATORY  0.0 .. 999999.9;
+      LinearpositionBis  :             0.0 .. 999999.9;
+      Bemerkung          :             MTEXT*500;
+      UNIQUE Kennung;
+    END Resultat_Plan_C_D;
+
+    CLASS Aufwertungspotential EXTENDS Resultat_Plan_C_D =
+      Aufwertungspotential  :  MANDATORY  0 .. 3;
+    END Aufwertungspotential;
+
+    CLASS Nutzen EXTENDS Resultat_Plan_C_D =
+      GIS_basiert  :  MANDATORY  0 .. 3;
+    END Nutzen;
+
+  END RevitalisierungSeen;
+
+END SZ_Revitalisierung_Seen_V1_2.

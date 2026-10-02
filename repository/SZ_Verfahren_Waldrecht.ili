@@ -1,0 +1,130 @@
+INTERLIS 2.3;
+!!==============================================================================
+!!@ Title               = "Verfahren Waldrecht";
+!!@ shortDescription    = "Übergeordnetes Thema, welches der Erfassung der verschiedenen Verfahren im Waldrecht dient. Insbesondere werden die Verfahren der 'Waldfeststellung' wie auch der 'Rodung' darin behandelt.";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A241";
+!!@ Compiler-Version    = "ili2c-5.5.3-6c54f443006d3ca72d3e5a2392e7d5a2f75b6e8b";
+!!------------------------------------------------------------------------------
+!! Todo: "Dokumentablage" ==> "Dateiablage"
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2024-07-29 | 1.0 | Kep | Erstfassung
+!!==============================================================================
+MODEL SZ_Verfahren_Waldrecht_V1 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2024-07-29" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      OID AS UUIDOID;
+      Code       :  MANDATORY  TEXT*255;
+      Name       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Gemeinde EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Gemeinde;
+
+    CLASS Leitverfahren EXTENDS Katalogeintrag =  !! alte Bezeichnung: "Verfahrensart"; im Masterkatalog erfasst
+      UNIQUE Code;
+      UNIQUE Name;
+    END Leitverfahren;
+
+    CLASS Ursprung EXTENDS Katalogeintrag =  !! ursprüngliche Herkunft der Feststellung: Auswahl zwischen "WF" (eigentliche Waldfeststellung) oder "RO" (Rodungsbewilligung); im Masterkatalog erfasst
+      UNIQUE Code;
+      UNIQUE Name;
+    END Ursprung;
+
+    CLASS Verfahrensstatus EXTENDS Katalogeintrag = !! im Masterkatalog erfasst
+      UNIQUE Code;
+      UNIQUE Name;
+    END Verfahrensstatus;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    DEPENDS ON SZ_Verfahren_Waldrecht_V1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Verfahren (ABSTRACT) =  !! für jedes Verfahren wird es eine eigene Klasse geben, welche die verfahrensspezifischen Attribute führt
+      OID AS UUIDOID;
+      Kennung            :  MANDATORY  TEXT*20;
+      erfasstVon         :  MANDATORY  TEXT*100;
+      erfasstAm          :  MANDATORY  XMLDateTime;
+      geaendertVon       :  MANDATORY  TEXT*100;
+      geaendertAm        :  MANDATORY  XMLDateTime;
+!!      aufgelegtAb        :             XMLDate;  !! Begin der öffentlichen Auflage (im Normalfall das Publikationsdatum im Amtsblatt; Dauer: 20 Tage) 
+      Auflagebeginn      :             XMLDate;  !! Begin der öffentlichen Auflage (im Normalfall das Publikationsdatum im Amtsblatt; Dauer: 20 Tage) 
+      Verfuegungsdatum   :             XMLDate;  !! zu diskutieren: Umgang mit: Publikationsdatum; Inkraftsetzungsdatum 
+      Verfuegungsnummer  :             TEXT*15;
+      Verfuegungslink    :             URI;
+      Rechtskraftdatum   :             XMLDate;  !! Datum, ab dem die Verfügung endgültig verbindlich ist und nicht mehr angefochten werden kann.
+      !! "inBeschwerdefrist" löschen
+      Dokumentablage     :             TEXT*500;
+      Bemerkung          :             MTEXT*1000;
+      BemerkungIntern    :             MTEXT*1000;
+      UNIQUE Kennung;
+    END Verfahren;
+
+    CLASS Waldfeststellung EXTENDS Verfahren =
+      Lokalname          :  MANDATORY  TEXT*100;
+      verfuegtWald       :             BOOLEAN;
+      verfuegtNichtwald  :             BOOLEAN;
+    END Waldfeststellung;
+
+    CLASS Rodung EXTENDS Verfahren =
+      !! todo: Attribute gemäss Bundesmodell
+    END Rodung;
+
+    CLASS Person =
+      Rolle              :  MANDATORY  TEXT*50;    !! Gesuchssteller, Grundeigentümer, Einsprecher, .... (es wird vorderhand darauf verzichtet, die "Rolle" aus den Stammdaten zuzuordnen. Dies, weil zum jetzigen Zeitpunkt der Werteumfang nicht klar ist)
+      GdeNrBfS           :  MANDATORY  1 .. 9999;  !! bei Waldfeststellung pflicht
+      Grundstuecknummer  :  MANDATORY  TEXT*20;    !! bei Waldfeststellung pflicht
+      EGRID              :             TEXT*15;
+      Name               :             TEXT*100;
+      Adresszeile1       :             TEXT*100;
+      Adresszeile2       :             TEXT*100;
+      PLZ                :             TEXT*10;
+      Ortschaft          :             TEXT*100;
+      Bemerkung          :             MTEXT*1000;
+    END Person;
+
+    ASSOCIATION Waldfeststellung__Person =
+      rWaldfeststellung  --  {1}     Waldfeststellung;
+      rPerson            --  {0..*}  Person;
+    END Waldfeststellung__Person;
+
+    ASSOCIATION Gemeinde__Waldfeststellung =
+      rGemeinde (EXTERNAL)  --  {1}     SZ_Verfahren_Waldrecht_V1.Stammdaten.Gemeinde;
+      rWaldfeststellung     --  {0..*}  Waldfeststellung;
+    END Gemeinde__Waldfeststellung;
+
+    ASSOCIATION Leitverfahren__Waldfeststellung =
+      rLeitverfahren (EXTERNAL)  --  {1}     SZ_Verfahren_Waldrecht_V1.Stammdaten.Leitverfahren;
+      rWaldfeststellung          --  {0..*}  Waldfeststellung;
+    END Leitverfahren__Waldfeststellung;
+
+    ASSOCIATION Ursprung__Waldfeststellung =
+      rUrsprung (EXTERNAL)  --  {1}     SZ_Verfahren_Waldrecht_V1.Stammdaten.Ursprung;
+      rWaldfeststellung     --  {0..*}  Waldfeststellung;
+    END Ursprung__Waldfeststellung;
+
+    ASSOCIATION Verfahrensstatus__Verfahren =
+      rVerfahrensstatus (EXTERNAL)  --  {1}     SZ_Verfahren_Waldrecht_V1.Stammdaten.Verfahrensstatus;
+      rVerfahren                    --  {0..*}  Verfahren;
+    END Verfahrensstatus__Verfahren;
+
+  END Fachdaten;
+
+END SZ_Verfahren_Waldrecht_V1.
