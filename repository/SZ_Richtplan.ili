@@ -1,0 +1,221 @@
+INTERLIS 2.3;
+!!==============================================================================
+!!@ Title               = "Richtplan kantonal";
+!!@ shortDescription    = "Dieses Modell dient der Datenerfassung der Elemente für den kantonalen Richtplan";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A084";
+!!@ iliCompilerVersion  = "ili2c-5.5.3-6c54f443006d3ca72d3e5a2392e7d5a2f75b6e8b";
+!!------------------------------------------------------------------------------
+!! Todo: - - -
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2024-02-21 | 1.0 | KEP | Erstfassung
+!!==============================================================================
+MODEL SZ_Richtplan_V1 (de)
+  AT "http://models.geo.sz.ch"
+  VERSION "2024-02-21" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1;
+
+    Linie =
+      POLYLINE WITH (STRAIGHTS) VERTEX Punkt;
+
+    Einzelflaeche =
+      SURFACE WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.050;
+
+    Gebietseinteilung =
+      AREA WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.050;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      OID AS UUIDOID;
+      Code       :  MANDATORY  TEXT*255;
+      Name       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Kartentyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Kartentyp;
+
+    CLASS Thema EXTENDS Katalogeintrag = !! Katalog?
+      UNIQUE Code;
+      UNIQUE Name;
+    END Thema;
+
+    CLASS Koordinationsstand EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Koordinationsstand;
+
+    CLASS Objekttyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Objekttyp;
+
+    CLASS Verfahrensstatus EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Verfahrensstatus;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Geobasisdaten =
+    DEPENDS ON SZ_Richtplan_V1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Karte =
+      erfasstVon                :  MANDATORY  TEXT*100;
+      erfasstAm                 :  MANDATORY  XMLDateTime;
+      geaendertVon              :  MANDATORY  TEXT*100;
+      geaendertAm               :  MANDATORY  XMLDateTime;
+      Titel                     :  MANDATORY  TEXT*200;
+      Code                      :             TEXT*50;
+      Massstabszahl_Druck       :  MANDATORY  1000 .. 1000000;
+      Massstabszahl_Basiskarte  :             1000 .. 1000000;
+      Bemerkung                 :             MTEXT*255;
+    END Karte;
+
+    CLASS Objektgruppe =
+      erfasstVon           :  MANDATORY  TEXT*100;
+      erfasstAm            :  MANDATORY  XMLDateTime;
+      geaendertVon         :  MANDATORY  TEXT*100;
+      geaendertAm          :  MANDATORY  XMLDateTime;
+      Originalbezeichnung  :  MANDATORY  TEXT*200;
+      Code                 :  MANDATORY  TEXT*50;
+      Abkuerzung           :             TEXT*25;
+      Kapitel              :             TEXT*200;
+      Weblink              :             URI;
+    END Objektgruppe;
+
+    CLASS Objekt (ABSTRACT) =
+      erfasstVon               :  MANDATORY  TEXT*100;
+      erfasstAm                :  MANDATORY  XMLDateTime;
+      geaendertVon             :  MANDATORY  TEXT*100;
+      geaendertAm              :  MANDATORY  XMLDateTime;
+      Beschlussdatum           :             XMLDate;
+      Massstabszahl_Erfassung  :             100 .. 1000000;
+      Name                     :             TEXT*200;
+      Nummer                   :             TEXT*50;
+      Bemerkung                :             MTEXT*255;
+    END Objekt;
+
+    CLASS Punktelement EXTENDS Objekt =
+    END Punktelement;
+
+    CLASS Linienelement EXTENDS Objekt =
+    END Linienelement;
+
+    CLASS Flaechenelement EXTENDS Objekt =
+    END Flaechenelement;
+
+    CLASS Punktgeometrie =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Geometrie     :  MANDATORY  Punkt;
+    END Punktgeometrie;
+
+    CLASS Liniengeometrie =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Geometrie     :  MANDATORY  Linie;
+    END Liniengeometrie;
+
+    CLASS Flaechengeometrie =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Geometrie     :  MANDATORY  Einzelflaeche;
+    END Flaechengeometrie;
+
+    ASSOCIATION Kartentyp__Karte =
+      rKartentyp (EXTERNAL)  --  {1}     SZ_Richtplan_V1.Stammdaten.Kartentyp;
+      rKarte                 --  {0..*}  Karte;
+    END Kartentyp__Karte;
+
+    ASSOCIATION Thema__Objektart =
+      rThema (EXTERNAL)  --  {1}     SZ_Richtplan_V1.Stammdaten.Thema;
+      rObjektgruppe      --  {0..*}  Objektgruppe;
+    END Thema__Objektart;
+
+    ASSOCIATION Koordinationsstand__Objekt =
+      rKoordinationsstand (EXTERNAL)  --  {1}     SZ_Richtplan_V1.Stammdaten.Koordinationsstand;
+      rObjekt                         --  {0..*}  Objekt;
+    END Koordinationsstand__Objekt;
+
+    ASSOCIATION Objekttyp__Objekt =
+      rObjekttyp (EXTERNAL)  --  {1}     SZ_Richtplan_V1.Stammdaten.Objekttyp;
+      rObjekt                --  {0..*}  Objekt;
+    END Objekttyp__Objekt;
+
+    ASSOCIATION Punktelement__Punktgeometrie =
+      rPunktelement (EXTERNAL)  -<#>  {1}     Punktelement;
+      rPunktgeometrie           --    {0..*}  Punktgeometrie;
+    END Punktelement__Punktgeometrie;
+
+    ASSOCIATION Linienelement__Liniengeometrie =
+      rLinienelement (EXTERNAL)  -<#>  {1}     Linienelement;
+      rLiniengeometrie           --    {0..*}  Liniengeometrie;
+    END Linienelement__Liniengeometrie;
+
+    ASSOCIATION Flaechenelement__Flaechengeometrie =
+      rFlaechenelement (EXTERNAL)  -<#>  {1}     Flaechenelement;
+      rFlaechengeometrie           --    {0..*}  Flaechengeometrie;
+    END Flaechenelement__Flaechengeometrie;
+
+    ASSOCIATION Objektgruppe__Objekt =
+      rObjektgruppe  -<#>  {1}     Objektgruppe;
+      rObjekt        --    {0..*}  Objekt;
+    END Objektgruppe__Objekt;
+
+    ASSOCIATION Karte__Objekt =
+      rKarte   --  {1..*}  Karte;
+      rObjekt  --  {0..*}  Objekt;
+    END Karte__Objekt;
+
+  END Geobasisdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC TransferMetadaten =
+    DEPENDS ON SZ_Richtplan_V1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Datenbestand =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Stand         :  MANDATORY  XMLDate;
+      Bemerkung     :             MTEXT*1000;
+    END Datenbestand;
+
+    ASSOCIATION Datenbestand__Datenbestand =
+      rDatenbestandSingleton   -<#>  {1}  Datenbestand;
+      rDatenbestand            --    {1}  Datenbestand;
+    END Datenbestand__Datenbestand;
+
+    ASSOCIATION Verfahrensstatus__Datenbestand =
+      rVerfahrensstatus (EXTERNAL)  --  {1}     SZ_Richtplan_V1.Stammdaten.Verfahrensstatus;
+      rDatenbestand                 --  {0..*}  Datenbestand;
+    END Verfahrensstatus__Datenbestand;
+
+  END TransferMetadaten;
+
+END SZ_Richtplan_V1.
