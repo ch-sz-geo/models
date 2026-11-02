@@ -1,0 +1,71 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Geschwindigkeitsmessanlagen";
+!!@ shortDescription    = "Dieses Modell führt die Geschwindigkeitsmessanlagen, welche durch die Kantonspolizei Schwyz betrieben werden.";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A273";
+!!@ iliCompilerVersion  = "ili2c-5.6.8-e6f7ab6dd5cdba29afc9b24866ecb98c057d82b2";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2026-10-30 | 1.0 | sde | Erstfassung
+!!==============================================================================
+MODEL SZ_Geschwindigkeitsmessanlagen_V1 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-10-30" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      Name       :  MANDATORY  TEXT*255;           !! für die Benutzer lesbarer Name
+      Code       :  MANDATORY  TEXT*255;           !! Zeichenumfang gemaess Referenzhandbuch
+      SortierNr  :  MANDATORY -999999 .. 999999;   !! bestimmt die Reihenfolge des Eintrags: tiefste Nr. erscheint zuoberst
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Anlagetyp EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Anlagetyp;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Geschwindigkeitsmessanlagen_V1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Geschwindigkeitsmessanlage =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Ortschaft     :  MANDATORY  TEXT*100;
+      Strasse       :  MANDATORY  TEXT*100;
+      istAktiv      :  MANDATORY  BOOLEAN;
+      Geometrie     :  MANDATORY  Punkt;
+    END Geschwindigkeitsmessanlage;
+
+    ASSOCIATION Anlagetyp__Geschwindigkeitsmessanlage =
+      rAnlagetyp (EXTERNAL)        --  {1}     SZ_Geschwindigkeitsmessanlagen_V1.Stammdaten.Anlagetyp;
+      rGeschwindigkeitsmessanlage  --  {0..*}  Geschwindigkeitsmessanlage;
+    END Anlagetyp__Geschwindigkeitsmessanlage;
+
+  END Fachdaten;
+
+END SZ_Geschwindigkeitsmessanlagen_V1.
