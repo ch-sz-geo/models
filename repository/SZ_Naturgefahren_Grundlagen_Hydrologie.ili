@@ -1,0 +1,309 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Naturgefahren Grundlagen Hydrologie";
+!!@ shortDescription    = "Dieses Modell stellt die hydrologischen Grundlagen für die Naturgefahrenkarte zur Verfügung.";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://ch-sz-geo.github.io/A259/docs/modelldokumentation.html";
+!!@ Themennummer        = "A259";
+!!@ iliCompilerVersion  = "ili2c-5.6.8-e6f7ab6dd5cdba29afc9b24866ecb98c057d82b2";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2026-05-21 | 1.0 | mg  | Erstfassung
+!!==============================================================================
+MODEL SZ_Naturgefahren_Grundlagen_Hydrologie_V1 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-05-21" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    BasketID = OID TEXT*255;
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1
+    ;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      Name       :  MANDATORY  TEXT*255;           !! für die Benutzer lesbarer Name
+      Code       :  MANDATORY  TEXT*255;           !! Zeichenumfang gemaess Referenzhandbuch
+      SortierNr  :  MANDATORY -999999 .. 999999;   !! bestimmt die Reihenfolge des Eintrags: tiefste Nr. erscheint zuoberst
+      Bemerkung  :             MTEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Gemeinde EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Gemeinde;
+
+    CLASS Los EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Los;
+
+    CLASS MethodeHochwasser EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END MethodeHochwasser;
+
+    CLASS MethodeMittelwasser EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END MethodeMittelwasser;
+
+    CLASS MethodeNiedrigwasser EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END MethodeNiedrigwasser;
+
+    CLASS MethodeGeschiebe EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END MethodeGeschiebe;
+
+    CLASS MethodeSchwachstelle EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END MethodeSchwachstelle;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Fachdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Abflussregime (ABSTRACT) =
+      erfasstVon             :  MANDATORY  TEXT*100;
+      erfasstAm              :  MANDATORY  XMLDateTime;
+      geaendertVon           :  MANDATORY  TEXT*100;
+      geaendertAm            :  MANDATORY  XMLDateTime;
+      Kennung                :  MANDATORY  TEXT*15;   !! Kennung AWN
+      KuerzelBericht         :             TEXT*100;  !! Kürzel auf alten Berichten
+      ProzessquelleNr        :             TEXT*100;  !! Fliessgewässer-Nr. oder Runse
+      ProzessquelleName      :             TEXT*100;  !! Fliessgewässername oder Runse
+      Einzugsgebietsgroesse  :             0.000..999999.999; !! Grösse des Einzugsgebiets in km2
+      istKlimabereinigt      :             BOOLEAN;
+      istAbgeschlossen       :             BOOLEAN;
+      Bemerkung              :             MTEXT*1000;
+      Geometrie              :  MANDATORY  Punkt;
+      UNIQUE Kennung;
+    END Abflussregime;
+
+    CLASS Hochwasser EXTENDS Abflussregime =
+      HQ30   :             0.00..999999.99;
+      HQ100  :             0.00..999999.99;
+      HQ300  :             0.00..999999.99;
+      EHQ    :             0.00..999999.99;
+    END Hochwasser;
+
+    CLASS Mittelwasser EXTENDS Abflussregime =
+      MQ  :             0.00..999999.99;
+    END Mittelwasser;
+
+    CLASS Niedrigwasser EXTENDS Abflussregime =
+      Q347       :             0.00..999999.99;
+      Messreihe  :             TEXT*255;
+    END Niedrigwasser;
+
+    CLASS Geschiebe =
+      erfasstVon         :  MANDATORY  TEXT*100;
+      erfasstAm          :  MANDATORY  XMLDateTime;
+      geaendertVon       :  MANDATORY  TEXT*100;
+      geaendertAm        :  MANDATORY  XMLDateTime;
+      Kennung            :  MANDATORY  TEXT*15;   !! Kennung AWN
+      KuerzelBericht     :             TEXT*100;  !! Kürzel auf alten Berichten
+      ProzessquelleNr    :             TEXT*100;  !! Fliessgewässer-Nr. oder Runse
+      ProzessquelleName  :             TEXT*100;  !! Fliessgewässername oder Runse
+      G30                :             0.00..999999.99;
+      G100               :             0.00..999999.99;
+      G300               :             0.00..999999.99;
+      GEHQ               :             0.00..999999.99;
+      istAbgeschlossen   :             BOOLEAN;
+      Bemerkung          :             MTEXT*1000;
+      Geometrie          :  MANDATORY  Punkt;
+      UNIQUE Kennung;
+    END Geschiebe;
+
+    CLASS Schwachstelle =
+      erfasstVon                   :  MANDATORY  TEXT*100;
+      erfasstAm                    :  MANDATORY  XMLDateTime;
+      geaendertVon                 :  MANDATORY  TEXT*100;
+      geaendertAm                  :  MANDATORY  XMLDateTime;
+      Kennung                      :  MANDATORY  TEXT*15;   !! Kennung AWN
+      KuerzelBericht               :             TEXT*100;  !! Kürzel auf alten Berichten
+      ProzessquelleNr              :             TEXT*100;  !! Fliessgewässer-Nr. oder Runse
+      ProzessquelleName            :             TEXT*100;  !! Fliessgewässername oder Runse
+      AbflusskapazitaetReinwasser  :             0.00..999999.99;
+      V30                          :             0.00..999999.99;
+      V100                         :             0.00..999999.99;
+      V300                         :             0.00..999999.99;
+      VEHQ                         :             0.00..999999.99;
+      AbflusskapazitaetEff30       :             0.00..999999.99;
+      AbflusskapazitaetEff100      :             0.00..999999.99;
+      AbflusskapazitaetEff300      :             0.00..999999.99;
+      AbflusskapazitaetEffEHQ      :             0.00..999999.99;
+      Austritt30                   :             0.00..999999.99;
+      Austritt100                  :             0.00..999999.99;
+      Austritt300                  :             0.00..999999.99;
+      istAbgeschlossen             :             BOOLEAN;
+      Bemerkung                    :             MTEXT*1000;
+      Geometrie                    :  MANDATORY  Punkt;
+      UNIQUE Kennung;
+    END Schwachstelle;
+
+    CLASS Bearbeiter =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Name          :  MANDATORY  TEXT*200;
+      Bemerkung     :             MTEXT*1000;
+    END Bearbeiter;
+
+    CLASS Dokument =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Ablage        :  MANDATORY  TEXT*500;
+      Bemerkung     :             MTEXT*1000;
+      UNIQUE Ablage;
+    END Dokument;
+
+    ASSOCIATION MethodeHochwasser__Hochwasser =
+      rMethodeHochwasser (EXTERNAL)  --  {1}     SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.MethodeHochwasser;
+      rHochwasser                    --  {0..*}  Hochwasser;
+    END MethodeHochwasser__Hochwasser;
+
+    ASSOCIATION MethodeMittelwasser__Mittelwasser =
+      rMethodeMittelwasser (EXTERNAL)  --  {1}     SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.MethodeMittelwasser;
+      rMittelwasser                    --  {0..*}  Mittelwasser;
+    END MethodeMittelwasser__Mittelwasser;
+
+    ASSOCIATION MethodeNiedrigwasser__Niedrigwasser =
+      rMethodeNiedrigwasser (EXTERNAL)  --  {1}     SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.MethodeNiedrigwasser;
+      rNiedrigwasser                    --  {0..*}  Niedrigwasser;
+    END MethodeNiedrigwasser__Niedrigwasser;
+
+    ASSOCIATION MethodeGeschiebe__Geschiebe =
+      rMethodeGeschiebe (EXTERNAL)  --  {1}     SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.MethodeGeschiebe;
+      rGeschiebe                    --  {0..*}  Geschiebe;
+    END MethodeGeschiebe__Geschiebe;
+
+    ASSOCIATION MethodeSchwachstelle__Schwachstelle =
+      rMethodeSchwachstelle (EXTERNAL)  --  {1}     SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.MethodeSchwachstelle;
+      rSchwachstelle                    --  {0..*}  Schwachstelle;
+    END MethodeSchwachstelle__Schwachstelle;
+
+    ASSOCIATION Bearbeiter__Hochwasser =
+      rBearbeiter  --  {1}     Bearbeiter;
+      rHochwasser  --  {0..*}  Hochwasser;
+    END Bearbeiter__Hochwasser;
+
+    ASSOCIATION Bearbeiter__Mittelwasser =
+      rBearbeiter    --  {1}     Bearbeiter;
+      rMittelwasser  --  {0..*}  Mittelwasser;
+    END Bearbeiter__Mittelwasser;
+
+    ASSOCIATION Bearbeiter__Niedrigwasser =
+      rBearbeiter     --  {1}     Bearbeiter;
+      rNiedrigwasser  --  {0..*}  Niedrigwasser;
+    END Bearbeiter__Niedrigwasser;
+
+    ASSOCIATION Bearbeiter__Geschiebe =
+      rBearbeiter  --  {1}     Bearbeiter;
+      rGeschiebe   --  {0..*}  Geschiebe;
+    END Bearbeiter__Geschiebe;
+
+    ASSOCIATION Bearbeiter__Schwachstelle =
+      rBearbeiter     --  {1}     Bearbeiter;
+      rSchwachstelle  --  {0..*}  Schwachstelle;
+    END Bearbeiter__Schwachstelle;
+
+    ASSOCIATION Dokument__Hochwasser =
+      rDokument    -- {0..*}  Dokument;
+      rHochwasser  -- {0..*}  Hochwasser;
+    END Dokument__Hochwasser;
+
+    ASSOCIATION Dokument__Mittelwasser =
+      rDokument      -- {0..*}  Dokument;
+      rMittelwasser  -- {0..*}  Mittelwasser;
+    END Dokument__Mittelwasser;
+
+    ASSOCIATION Dokument__Niedrigwasser =
+      rDokument       -- {0..*}  Dokument;
+      rNiedrigwasser  -- {0..*}  Niedrigwasser;
+    END Dokument__Niedrigwasser;
+
+    ASSOCIATION Dokument__Geschiebe =
+      rDokument   -- {0..*}  Dokument;
+      rGeschiebe  -- {0..*}  Geschiebe;
+    END Dokument__Geschiebe;
+
+    ASSOCIATION Dokument__Schwachstelle =
+      rDokument       -- {0..*}  Dokument;
+      rSchwachstelle  -- {0..*}  Schwachstelle;
+    END Dokument__Schwachstelle;
+
+    ASSOCIATION Gemeinde__Hochwasser =
+      rGemeinde (EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Gemeinde;
+      rHochwasser           --  {0..*}  Hochwasser;
+    END Gemeinde__Hochwasser;
+
+    ASSOCIATION Gemeinde__Mittelwasser =
+      rGemeinde (EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Gemeinde;
+      rHochwasser           --  {0..*}  Mittelwasser;
+    END Gemeinde__Mittelwasser;
+
+    ASSOCIATION Gemeinde__Niedrigwasser =
+      rGemeinde(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Gemeinde;
+      rNiedrigwasser       --  {0..*}  Niedrigwasser;
+    END Gemeinde__Niedrigwasser;
+
+    ASSOCIATION Gemeinde__Geschiebe =
+      rGemeinde(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Gemeinde;
+      rGeschiebe           --  {0..*}  Geschiebe;
+    END Gemeinde__Geschiebe;
+
+    ASSOCIATION Gemeinde__Schwachstelle =
+      rGemeinde(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Gemeinde;
+      rSchwachstelle       --  {0..*}  Schwachstelle;
+    END Gemeinde__Schwachstelle;
+
+    ASSOCIATION Los__Hochwasser =
+      rLos(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Los;
+      rHochwasser     --  {0..*}  Hochwasser;
+    END Los__Hochwasser;
+
+    ASSOCIATION Los__Mittelwasser =
+      rLos(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Los;
+      rHochwasser     --  {0..*}  Mittelwasser;
+    END Los__Mittelwasser;
+
+    ASSOCIATION Los__Niedrigwasser =
+      rLos(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Los;
+      rNiedrigwasser  --  {0..*}  Niedrigwasser;
+    END Los__Niedrigwasser;
+
+    ASSOCIATION Los__Geschiebe =
+      rLos(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Los;
+      rGeschiebe      --  {0..*}  Geschiebe;
+    END Los__Geschiebe;
+
+    ASSOCIATION Los__Schwachstelle =
+      rLos(EXTERNAL)  --  {0..1}  SZ_Naturgefahren_Grundlagen_Hydrologie_V1.Stammdaten.Los;
+      rSchwachstelle  --  {0..*}  Schwachstelle;
+    END Los__Schwachstelle;
+
+  END Fachdaten;
+
+END SZ_Naturgefahren_Grundlagen_Hydrologie_V1.
