@@ -1,0 +1,241 @@
+INTERLIS 2.4;
+!!==============================================================================
+!!@ Title               = "Überwachungsinventar für Naturgefahrenprozesse";
+!!@ shortDescription    = "Dieses Modell beschreibt die Standorte von Überwachungsobjekten für Naturgefahrenprozesse";
+!!@ technicalContact    = "mailto:geoportal@sz.ch";
+!!@ furtherInformation  = "https://www.sz.ch";
+!!@ Themennummer        = "A074";
+!!@ iliCompilerVersion  = "ili2c-5.6.7-d72067b5afa50db9409d1c10d99110fbc8bcca20";
+!!------------------------------------------------------------------------------
+!!      Version     | wer | was
+!! Datum      | Nr  |     |
+!!------------------------------------------------------------------------------
+!! 2026-02-06 | 2.0 | Sde | Format von Dokument.URL angepasst
+!! 2025-11-20 | 2.0 | Sde | Überführung in neuste Modellierungsart
+!!                           - neu: Topic Stammdaten
+!!                           - neu: Basket OID und OID
+!! 2025-03-20 | 1.0 | kep | Erstfassung
+!!==============================================================================
+MODEL SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2 (de)
+  AT "https://models.geo.sz.ch"
+  VERSION "2026-02-06" =
+
+  IMPORTS UNQUALIFIED INTERLIS;
+
+  DOMAIN
+    Punkt =
+      COORD 2672000.000 .. 2719000.000 [m]
+           ,1193000.000 .. 1232000.000 [m]
+           ,ROTATION 2 -> 1
+    ;
+
+    Linie =
+      POLYLINE WITH (STRAIGHTS) VERTEX Punkt;
+
+    Einzelflaeche =
+      SURFACE WITH (STRAIGHTS) VERTEX Punkt WITHOUT OVERLAPS > 0.050;
+
+    BasketID = OID TEXT*255;
+
+!!------------------------------------------------------------------------------
+  TOPIC Stammdaten =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+!!------------------------------------------------------------------------------
+    CLASS Katalogeintrag (ABSTRACT) =
+      Name       :  MANDATORY  TEXT*255;
+      Code       :  MANDATORY  TEXT*255;
+      SortierNr  :  MANDATORY -999999 .. 999999;
+      Bemerkung  :             TEXT*1000;
+    END Katalogeintrag;
+
+    CLASS Prozess EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Prozess;
+
+    CLASS Zweck EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Zweck;
+
+    CLASS Kontrollintervall EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Kontrollintervall;
+
+    CLASS Messart EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Messart;
+
+    CLASS Einheit EXTENDS Katalogeintrag =
+      UNIQUE Code;
+      UNIQUE Name;
+    END Einheit;
+
+  END Stammdaten;
+
+!!------------------------------------------------------------------------------
+  TOPIC Ueberwachungsinventare =
+    BASKET OID AS BasketID;
+    OID AS UUIDOID;
+    DEPENDS ON SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.Stammdaten;
+!!------------------------------------------------------------------------------
+    CLASS Ueberwachungsgebiet =
+      erfasstVon        :  MANDATORY  TEXT*100;
+      erfasstAm         :  MANDATORY  XMLDateTime;
+      geaendertVon      :  MANDATORY  TEXT*100;
+      geaendertAm       :  MANDATORY  XMLDateTime;
+      Name              :  MANDATORY  TEXT*100;
+      Beschreibung      :             MTEXT*255;
+      gueltigVon        :  MANDATORY  XMLDate;
+      gueltigBis        :             XMLDate;
+      Schadenpotential  :             TEXT*100;
+      Link              :             URI;
+      Bemerkung         :             MTEXT*1000;
+      Geometrie         :  MANDATORY  Einzelflaeche;
+      UNIQUE Name;
+    END Ueberwachungsgebiet; 
+
+    CLASS Messstelle (ABSTRACT) =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Name          :  MANDATORY  TEXT*100;
+      gueltigVon    :  MANDATORY  XMLDate;
+      gueltigBis    :             XMLDate;
+      Bemerkung     :             MTEXT*1000;
+    END Messstelle;
+
+    CLASS Messpunkt EXTENDS Messstelle =
+      Standort  :  MANDATORY  Punkt;
+    END Messpunkt;
+
+    CLASS Messlinie EXTENDS Messstelle =
+      Messlinie  :  MANDATORY  Linie;
+    END Messlinie;
+
+    CLASS Einzelmessung (ABSTRACT) =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      gemessenAm    :  MANDATORY  XMLDateTime;
+      gemessenVon   :             TEXT*100;
+      Bemerkung     :             MTEXT*1000;
+    END Einzelmessung;
+
+    CLASS Koordinaten EXTENDS Einzelmessung =
+      dX_Nullmessung  : -99999.99..99999.99;
+      dY_Nullmessung  : -99999.99..99999.99;
+      dZ_Nullmessung  : -99999.99..99999.99;
+      dX_Vormessung   : -99999.99..99999.99;
+      dY_Vormessung   : -99999.99..99999.99;
+      dZ_Vormessung   : -99999.99..99999.99;
+    END Koordinaten;
+
+    CLASS Messwert EXTENDS Einzelmessung =
+      Wert            :            -99999.999..99999.999;
+      istNullmessung  :  MANDATORY  BOOLEAN;
+    END Messwert;
+
+    CLASS Dokument =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      URL           :  MANDATORY  TEXT*200;
+    END Dokument;
+
+    CLASS Organisation =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Name          :  MANDATORY  TEXT*100;
+      Ort           :             TEXT*100;
+    END Organisation;
+
+    CLASS Geraet =
+      erfasstVon    :  MANDATORY  TEXT*100;
+      erfasstAm     :  MANDATORY  XMLDateTime;
+      geaendertVon  :  MANDATORY  TEXT*100;
+      geaendertAm   :  MANDATORY  XMLDateTime;
+      Name          :  MANDATORY  TEXT*100;
+    END Geraet;
+
+    ASSOCIATION Ueberwachungsgebiet__Messstelle =
+      rUeberwachungsgebiet  -<>  {1}     Ueberwachungsgebiet;
+      rMessstelle           --   {0..*}  Messstelle;
+    END Ueberwachungsgebiet__Messstelle;
+
+    ASSOCIATION Ueberwachungsgebiet__Dokument =
+      rUeberwachungsgebiet  --  {0..1}  Ueberwachungsgebiet;
+      rDokument             --  {0..*}  Dokument;
+    END Ueberwachungsgebiet__Dokument;
+
+    ASSOCIATION AuftraggeberMessung__Ueberwachungsgebiet =
+      rAuftraggeberMessung   --  {0..1}  Organisation;
+      rUeberwachungsgebiet1  --  {0..*}  Ueberwachungsgebiet;
+    END AuftraggeberMessung__Ueberwachungsgebiet;
+
+    ASSOCIATION Messverantwortung__Ueberwachungsgebiet =
+      rMessverantwortung     --  {1}     Organisation;
+      rUeberwachungsgebiet3  --  {0..*}  Ueberwachungsgebiet;
+    END Messverantwortung__Ueberwachungsgebiet;
+
+    ASSOCIATION AuswerterMessung__Ueberwachungsgebiet =
+      rAuswerterMessung      --  {0..1}  Organisation;
+      rUeberwachungsgebiet4  --  {0..*}  Ueberwachungsgebiet;
+    END AuswerterMessung__Ueberwachungsgebiet;
+
+    ASSOCIATION Messstelle__Einzelmessung =
+      rMessstelle     --  {1}     Messstelle;
+      rEinzelmessung  --  {0..*}  Einzelmessung;
+    END Messstelle__Einzelmessung;
+
+    ASSOCIATION Messstelle__Dokument =
+      rMessstelle  --  {0..*}  Messstelle;
+      rDokument    --  {0..*}  Dokument;
+    END Messstelle__Dokument;
+
+    ASSOCIATION AuftragnehmerMessung__Messstelle =
+      rAuftragnehmerMessung  --  {0..1}  Organisation;
+      rMessstelle            --  {0..*}  Messstelle;
+    END AuftragnehmerMessung__Messstelle;
+
+    ASSOCIATION Geraet__Einzelmessung =
+      rGeraet         --  {0..*}  Geraet;
+      rEinzelmessung  --  {0..*}  Einzelmessung;
+    END Geraet__Einzelmessung;
+
+    ASSOCIATION Prozess__Ueberwachungsgebiet =
+      rProzess (EXTERNAL)   --  {1}     SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.Stammdaten.Prozess;
+      rUeberwachungsgebiet  --  {0..*}  Ueberwachungsgebiet;
+    END Prozess__Ueberwachungsgebiet;
+
+    ASSOCIATION Zweck__Ueberwachungsgebiet =
+      rZweck (EXTERNAL)     --  {1..*}  SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.Stammdaten.Zweck;
+      rUeberwachungsgebiet  --  {0..*}  Ueberwachungsgebiet;
+    END Zweck__Ueberwachungsgebiet;
+
+    ASSOCIATION Kontrollintervall__Ueberwachungsgebiet =
+      rKontrollintervall (EXTERNAL)  --  {1}     SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.Stammdaten.Kontrollintervall;
+      rUeberwachungsgebiet           --  {0..*}  Ueberwachungsgebiet;
+    END Kontrollintervall__Ueberwachungsgebiet;
+
+    ASSOCIATION Messart__Messstelle =
+      rMessart (EXTERNAL)  --  {1}     SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.Stammdaten.Messart;
+      rMessstelle          --  {0..*}  Messstelle;
+    END Messart__Messstelle;
+
+    ASSOCIATION Einheit__Messstelle =
+      rEinheit (EXTERNAL)  --  {1}     SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.Stammdaten.Einheit;
+      rMessstelle          --  {0..*}  Messstelle;
+    END Einheit__Messstelle;
+
+  END Ueberwachungsinventare;
+
+END SZ_Ueberwachungsinventar_Naturgefahrenprozesse_V2.
